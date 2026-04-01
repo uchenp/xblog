@@ -17,6 +17,14 @@ export type PostInput = Omit<Post, 'slug' | 'publishedAt' | 'updatedAt'> & {
   updatedAt?: string
 }
 
+interface Frontmatter {
+  title: string
+  excerpt: string
+  publishedAt: string
+  updatedAt: string
+  published: boolean
+}
+
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts')
 
 // 确保目录存在
@@ -28,6 +36,53 @@ async function ensureDir() {
   }
 }
 
+// 解析 Markdown frontmatter
+function parseFrontmatter(content: string): { frontmatter: Frontmatter; body: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
+  
+  if (!match) {
+    throw new Error('无效的 Markdown 格式，缺少 frontmatter')
+  }
+  
+  const [, frontmatterStr, body] = match
+  const frontmatter = parseFrontmatterContent(frontmatterStr)
+  
+  return { frontmatter, body: body.trim() }
+}
+
+// 解析 YAML 风格的 frontmatter 内容
+function parseFrontmatterContent(content: string): Frontmatter {
+  const lines = content.split('\n')
+  const result: any = {}
+  
+  for (const line of lines) {
+    const [key, ...valueParts] = line.split(':')
+    const value = valueParts.join(':').trim()
+    
+    if (key && value) {
+      const trimmedKey = key.trim()
+      if (trimmedKey === 'published') {
+        result[trimmedKey] = value === 'true'
+      } else {
+        result[trimmedKey] = value.replace(/^['"]|['"]$/g, '')
+      }
+    }
+  }
+  
+  return result as Frontmatter
+}
+
+// 生成 frontmatter
+function generateFrontmatter(meta: Frontmatter): string {
+  return `---
+title: ${meta.title}
+excerpt: ${meta.excerpt}
+publishedAt: ${meta.publishedAt}
+updatedAt: ${meta.updatedAt}
+published: ${meta.published}
+---`
+}
+
 // 获取所有文章
 export async function getAllPosts(): Promise<Post[]> {
   await ensureDir()
@@ -37,10 +92,25 @@ export async function getAllPosts(): Promise<Post[]> {
     const posts: Post[] = []
     
     for (const file of files) {
-      if (file.endsWith('.json')) {
+      if (file.endsWith('.md')) {
         const filePath = path.join(POSTS_DIR, file)
         const content = await fs.readFile(filePath, 'utf-8')
-        posts.push(JSON.parse(content))
+        const slug = file.replace(/\.md$/, '')
+        
+        try {
+          const { frontmatter, body } = parseFrontmatter(content)
+          posts.push({
+            slug,
+            title: frontmatter.title,
+            content: body,
+            excerpt: frontmatter.excerpt,
+            publishedAt: frontmatter.publishedAt,
+            updatedAt: frontmatter.updatedAt,
+            published: frontmatter.published,
+          })
+        } catch (error) {
+          console.error(`Failed to parse ${file}:`, error)
+        }
       }
     }
     
@@ -63,11 +133,21 @@ export async function getPublishedPosts(): Promise<Post[]> {
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   await ensureDir()
   
-  const filePath = path.join(POSTS_DIR, `${slug}.json`)
+  const filePath = path.join(POSTS_DIR, `${slug}.md`)
   
   try {
     const content = await fs.readFile(filePath, 'utf-8')
-    return JSON.parse(content)
+    const { frontmatter, body } = parseFrontmatter(content)
+    
+    return {
+      slug,
+      title: frontmatter.title,
+      content: body,
+      excerpt: frontmatter.excerpt,
+      publishedAt: frontmatter.publishedAt,
+      updatedAt: frontmatter.updatedAt,
+      published: frontmatter.published,
+    }
   } catch {
     return null
   }
@@ -90,8 +170,17 @@ export async function createPost(input: PostInput): Promise<Post> {
     published: input.published,
   }
   
-  const filePath = path.join(POSTS_DIR, `${slug}.json`)
-  await fs.writeFile(filePath, JSON.stringify(post, null, 2))
+  const frontmatter = generateFrontmatter({
+    title: post.title,
+    excerpt: post.excerpt,
+    publishedAt: post.publishedAt,
+    updatedAt: post.updatedAt,
+    published: post.published,
+  })
+  
+  const fileContent = `${frontmatter}\n\n${post.content}`
+  const filePath = path.join(POSTS_DIR, `${slug}.md`)
+  await fs.writeFile(filePath, fileContent)
   
   return post
 }
@@ -111,15 +200,24 @@ export async function updatePost(slug: string, input: Partial<PostInput>): Promi
     updatedAt: new Date().toISOString(),
   }
   
-  const filePath = path.join(POSTS_DIR, `${slug}.json`)
-  await fs.writeFile(filePath, JSON.stringify(updatedPost, null, 2))
+  const frontmatter = generateFrontmatter({
+    title: updatedPost.title,
+    excerpt: updatedPost.excerpt,
+    publishedAt: updatedPost.publishedAt,
+    updatedAt: updatedPost.updatedAt,
+    published: updatedPost.published,
+  })
+  
+  const fileContent = `${frontmatter}\n\n${updatedPost.content}`
+  const filePath = path.join(POSTS_DIR, `${slug}.md`)
+  await fs.writeFile(filePath, fileContent)
   
   return updatedPost
 }
 
 // 删除文章
 export async function deletePost(slug: string): Promise<boolean> {
-  const filePath = path.join(POSTS_DIR, `${slug}.json`)
+  const filePath = path.join(POSTS_DIR, `${slug}.md`)
   
   try {
     await fs.unlink(filePath)

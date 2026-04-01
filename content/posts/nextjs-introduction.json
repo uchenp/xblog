@@ -1,9 +1,0 @@
-{
-  "slug": "nextjs-introduction",
-  "title": "Next.js 入门指南",
-  "content": "# Next.js 入门指南\n\nNext.js 是一个基于 React 的全栈框架，它提供了许多开箱即用的功能，让我们能够更轻松地构建现代化的 Web 应用。\n\n## 为什么选择 Next.js？\n\n### 1. 服务端渲染 (SSR)\n\nNext.js 支持服务端渲染，这意味着页面可以在服务器上预先渲染，然后发送给客户端。这带来了更好的 SEO 和首屏加载性能。\n\n### 2. 文件系统路由\n\n在 Next.js 中，你只需要在 `app` 目录下创建文件，就会自动生成对应的路由：\n\n```\napp/\n  page.tsx        → /\n  about/\n    page.tsx      → /about\n  posts/\n    page.tsx      → /posts\n    [slug]/\n      page.tsx    → /posts/:slug\n```\n\n### 3. API 路由\n\nNext.js 允许你在同一个项目中编写后端 API：\n\n```typescript\n// app/api/hello/route.ts\nexport async function GET() {\n  return Response.json({ message: 'Hello!' })\n}\n```\n\n### 4. React Server Components\n\nNext.js 16 默认使用 React Server Components，让你可以在服务端获取数据：\n\n```tsx\nasync function PostList() {\n  const posts = await getPosts()\n  return (\n    <ul>\n      {posts.map(post => (\n        <li key={post.id}>{post.title}</li>\n      ))}\n    </ul>\n  )\n}\n```\n\n## 开始使用\n\n创建一个新的 Next.js 项目非常简单：\n\n```bash\nnpx create-next-app@latest my-app\ncd my-app\nnpm run dev\n```\n\n## 总结\n\nNext.js 是一个功能强大且易于上手的框架。无论你是构建个人博客还是企业级应用，它都是一个出色的选择。",
-  "excerpt": "Next.js 是一个基于 React 的全栈框架，它提供了许多开箱即用的功能，让我们能够更轻松地构建现代化的 Web 应用。",
-  "publishedAt": "2026-03-28T10:00:00.000Z",
-  "updatedAt": "2026-03-28T10:00:00.000Z",
-  "published": true
-}
