@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, LogOut } from "lucide-react"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { getAllPosts } from "@/lib/posts"
 import { PostActions } from "@/components/admin/post-actions"
+import { LogoutButton } from "@/components/admin/logout-button"
 
 export default async function AdminPostsPage() {
   const posts = await getAllPosts()
@@ -22,12 +23,15 @@ export default async function AdminPostsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">文章管理</h1>
-        <Button asChild>
-          <Link href="/admin/posts/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新建文章
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild>
+            <Link href="/admin/posts/new">
+              <Plus className="mr-2 h-4 w-4" />
+              新建文章
+            </Link>
+          </Button>
+          <LogoutButton />
+        </div>
       </div>
 
       <div className="rounded-md border">

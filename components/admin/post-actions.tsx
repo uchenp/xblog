@@ -21,13 +21,26 @@ interface PostActionsProps {
 export function PostActions({ post }: PostActionsProps) {
   const router = useRouter()
 
+  function getAuthHeaders() {
+    return {
+      "Content-Type": "application/json",
+    }
+  }
+
   async function togglePublished() {
     try {
       const response = await fetch(`/api/posts/${post.slug}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ published: !post.published }),
+        credentials: "include",
       })
+
+      if (response.status === 401) {
+        toast.error("登录已过期，请重新登录")
+        router.push("/admin")
+        return
+      }
 
       if (!response.ok) {
         throw new Error("操作失败")
@@ -48,7 +61,15 @@ export function PostActions({ post }: PostActionsProps) {
     try {
       const response = await fetch(`/api/posts/${post.slug}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
+        credentials: "include",
       })
+
+      if (response.status === 401) {
+        toast.error("登录已过期，请重新登录")
+        router.push("/admin")
+        return
+      }
 
       if (!response.ok) {
         throw new Error("删除失败")

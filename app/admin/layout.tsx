@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { LayoutDashboard, FileText, ArrowLeft } from "lucide-react"
+import { LogoutButton } from "@/components/admin/logout-button"
 
 export const metadata: Metadata = {
   title: {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 const sidebarNavItems = [
   {
     title: "仪表盘",
-    href: "/admin",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -50,7 +51,7 @@ export default function AdminLayout({
           ))}
         </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="absolute bottom-4 left-4 right-4 space-y-2">
           <Link
             href="/"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -58,6 +59,9 @@ export default function AdminLayout({
             <ArrowLeft className="h-4 w-4" />
             返回博客
           </Link>
+          <div className="pt-1">
+            <LogoutButton />
+          </div>
         </div>
       </aside>
 

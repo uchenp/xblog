@@ -1,76 +1,71 @@
-import Link from "next/link"
-import { FileText, Plus, Eye } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { getAllPosts, getPublishedPosts } from "@/lib/posts"
+"use client"
 
-export default async function AdminDashboard() {
-  const allPosts = await getAllPosts()
-  const publishedPosts = await getPublishedPosts()
-  const draftPosts = allPosts.filter((post) => !post.published)
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Field, FieldLabel, FieldGroup } from "@/components/ui/field"
+
+export default function AdminLoginPage() {
+  const router = useRouter()
+  const [token, setToken] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token.trim()) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        toast.error("Token 无效，请重试")
+        return
+      }
+
+      toast.success("登录成功")
+      router.push("/admin/dashboard")
+      router.refresh()
+    } catch {
+      toast.error("登录失败，请重试")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">仪表盘</h1>
-        <Button asChild>
-          <Link href="/admin/posts/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新建文章
-          </Link>
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">全部文章</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{allPosts.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">已发布</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedPosts.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">草稿</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{draftPosts.length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-base">快捷操作</CardTitle>
+          <CardTitle>后台登录</CardTitle>
+          <CardDescription>输入 Admin Token 以继续</CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-4">
-          <Button variant="outline" asChild>
-            <Link href="/admin/posts">管理文章</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/admin/posts/new">写新文章</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/" target="_blank">
-              查看博客
-            </Link>
-          </Button>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Admin Token</FieldLabel>
+                <Input
+                  type="password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="输入认证 Token"
+                  autoFocus
+                />
+              </Field>
+            </FieldGroup>
+            <Button type="submit" className="w-full" disabled={isLoading || !token.trim()}>
+              {isLoading ? "登录中..." : "登录"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

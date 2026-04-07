@@ -13,7 +13,7 @@ export default function AboutPage() {
       <BlogHeader />
       
       <main className="flex-1">
-        <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
+        <article className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
           <header className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               关于我
@@ -27,16 +27,17 @@ export default function AboutPage() {
 
             <h2 className="mt-8 text-xl font-semibold">关于这个博客</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              这是一个用于记录技术学习、分享生活感悟的个人空间。我相信写作是一种很好的思考方式，
-              通过把想法写下来，我们可以更清晰地理解自己的想法，也能帮助到其他人。
+              这是一个专注于宏观经济数据分析与政策趋势解读的个人博客。
+              我相信通过深入分析经济数据和政策动向，可以帮助我们更好地理解全球经济走势，
+              做出更明智的投资和生活决策。
             </p>
 
             <h2 className="mt-8 text-xl font-semibold">我的兴趣</h2>
             <ul className="mt-4 space-y-2 text-muted-foreground">
-              <li>前端开发与用户体验设计</li>
-              <li>开源软件与技术分享</li>
+              <li>宏观经济数据分析</li>
+              <li>全球政策趋势解读</li>
+              <li>投资与市场研究</li>
               <li>阅读与写作</li>
-              <li>摄影与旅行</li>
             </ul>
 
             <h2 className="mt-8 text-xl font-semibold">联系方式</h2>
@@ -47,32 +48,21 @@ export default function AboutPage() {
               <li>
                 GitHub:{" "}
                 <a
-                  href="https://github.com"
+                  href="https://github.com/uchenp"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
                 >
-                  @username
-                </a>
-              </li>
-              <li>
-                Twitter:{" "}
-                <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
-                >
-                  @username
+                  @uchenp
                 </a>
               </li>
               <li>
                 Email:{" "}
                 <a
-                  href="mailto:hello@example.com"
+                  href="mailto:uchenp@foxmail.com"
                   className="text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
                 >
-                  hello@example.com
+                  uchenp@foxmail.com
                 </a>
               </li>
             </ul>

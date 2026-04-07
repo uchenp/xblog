@@ -8,7 +8,9 @@ interface EditPostPageProps {
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { slug } = await params
-  const post = await getPostBySlug(slug)
+  // URL 解码（处理中文等字符）
+  const decodedSlug = decodeURIComponent(slug)
+  const post = await getPostBySlug(decodedSlug)
 
   if (!post) {
     notFound()
