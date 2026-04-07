@@ -17,7 +17,7 @@ export function HeaderNav({ navigation }: HeaderNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="flex items-center gap-6">
+    <nav className="flex items-center gap-4">
       {navigation.map((item) => (
         <Link
           key={item.href}
