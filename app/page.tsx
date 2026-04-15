@@ -7,6 +7,7 @@ import { DailyQuote } from "@/components/daily-quote"
 import { TagCloud } from "@/components/blog/tag-cloud"
 import { MacroDataCards } from "@/components/macro-data-cards"
 import { EconomicCalendarWidget } from "@/components/economic-calendar-widget"
+import { HeroBackground } from "@/components/hero-background"
 import { getPublishedPosts } from "@/lib/posts"
 
 export default async function HomePage() {
@@ -19,28 +20,36 @@ export default async function HomePage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-          <div className="flex flex-col gap-3">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              FelixView
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl">
-              聚焦宏观经济数据分析与政策趋势解读，提供全球视野的市场洞察。
-            </p>
-            <div className="flex gap-4 pt-1">
-              <Link
-                href="/posts"
-                className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors"
-              >
-                阅读全部文章
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                关于我
-              </Link>
+        <section className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 overflow-hidden">
+          {/* 动态背景 */}
+          <div className="absolute inset-0 -z-10">
+            <HeroBackground />
+          </div>
+          
+          {/* 内容层 */}
+          <div className="relative z-10">
+            <div className="flex flex-col gap-3">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                FelixView
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl">
+                聚焦宏观经济数据分析与政策趋势解读，提供全球视野的市场洞察。
+              </p>
+              <div className="flex gap-4 pt-1">
+                <Link
+                  href="/posts"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors"
+                >
+                  阅读全部文章
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  关于我
+                </Link>
+              </div>
             </div>
           </div>
         </section>
