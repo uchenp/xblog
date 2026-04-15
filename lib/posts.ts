@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import Fuse from 'fuse.js'
 import { calculateReadingTime } from './reading-time'
 import { unstable_cache, revalidateTag } from 'next/cache'
 
@@ -332,20 +333,34 @@ export async function getPostsByCategory(category: string): Promise<Post[]> {
   return posts.filter(post => post.categories?.includes(category))
 }
 
-// 搜索文章
+// 搜索文章（使用 fuse.js 模糊搜索）
 export async function searchPosts(query: string): Promise<Post[]> {
   const posts = await getPublishedPosts()
-  const searchQuery = query.toLowerCase().trim()
-  
-  return posts.filter(post => {
-    const titleMatch = post.title.toLowerCase().includes(searchQuery)
-    const excerptMatch = post.excerpt.toLowerCase().includes(searchQuery)
-    const contentMatch = post.content.toLowerCase().includes(searchQuery)
-    const tagMatch = post.tags?.some(tag => tag.toLowerCase().includes(searchQuery))
-    const categoryMatch = post.categories?.some(cat => cat.toLowerCase().includes(searchQuery))
-    
-    return titleMatch || excerptMatch || contentMatch || tagMatch || categoryMatch
+  const searchQuery = query.trim()
+
+  if (!searchQuery) {
+    return posts
+  }
+
+  // fuse.js 配置：支持模糊匹配、多字段搜索
+  const fuse = new Fuse(posts, {
+    keys: [
+      { name: 'title', weight: 0.5 },
+      { name: 'excerpt', weight: 0.2 },
+      { name: 'content', weight: 0.1 },
+      { name: 'tags', weight: 0.15 },
+      { name: 'categories', weight: 0.05 },
+    ],
+    threshold: 0.4, // 匹配阈值，越小越严格
+    includeScore: true,
+    minMatchCharLength: 2, // 至少 2 个字符才触发模糊匹配
+    ignoreLocation: true, // 忽略匹配位置，更宽松的匹配
   })
+
+  const results = fuse.search(searchQuery)
+
+  // 返回按相关度排序的结果
+  return results.map((result) => result.item)
 }
 
 // 获取相关文章（基于标签）

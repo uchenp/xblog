@@ -1,35 +1,10 @@
 import { MetadataRoute } from 'next'
-import { promises as fs } from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-
-const POSTS_DIR = path.join(process.cwd(), 'content', 'posts')
-
-async function getPosts() {
-  const files = await fs.readdir(POSTS_DIR)
-  const mdFiles = files.filter(file => file.endsWith('.md'))
-  
-  const posts = await Promise.all(
-    mdFiles.map(async (file) => {
-      const filePath = path.join(POSTS_DIR, file)
-      const fileContent = await fs.readFile(filePath, 'utf-8')
-      const { data } = matter(fileContent)
-      
-      return {
-        slug: file.replace(/\.md$/, ''),
-        publishedAt: data.publishedAt,
-        updatedAt: data.updatedAt,
-        published: data.published,
-      }
-    })
-  )
-  
-  return posts.filter(post => post.published)
-}
+import { getAllPosts } from '@/lib/posts'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  const posts = await getPosts()
+  const posts = await getAllPosts()
+  const publishedPosts = posts.filter(post => post.published)
   
   // 静态页面
   const staticPages = [
@@ -84,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
   
   // 文章页面
-  const postPages = posts.map((post) => ({
+  const postPages = publishedPosts.map((post) => ({
     url: `${baseUrl}/posts/${post.slug}`,
     lastModified: new Date(post.updatedAt || post.publishedAt),
     changeFrequency: 'monthly' as const,
