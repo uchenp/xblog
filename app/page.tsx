@@ -8,6 +8,7 @@ import { TagCloud } from "@/components/blog/tag-cloud"
 import { MacroDataCards } from "@/components/macro-data-cards"
 import { EconomicCalendarWidget } from "@/components/economic-calendar-widget"
 import { HeroBackground } from "@/components/hero-background"
+import { WorldHeatmap } from "@/components/world-heatmap"
 import { getPublishedPosts } from "@/lib/posts"
 
 export default async function HomePage() {
@@ -95,6 +96,9 @@ export default async function HomePage() {
 
         {/* Economic Calendar */}
         <EconomicCalendarWidget />
+
+        {/* World Heatmap */}
+        <WorldHeatmap />
       </main>
 
       <BlogFooter />
