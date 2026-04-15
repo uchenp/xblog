@@ -5,6 +5,8 @@ import { BlogFooter } from "@/components/blog/footer"
 import { PostCard } from "@/components/blog/post-card"
 import { DailyQuote } from "@/components/daily-quote"
 import { TagCloud } from "@/components/blog/tag-cloud"
+import { MacroDataCards } from "@/components/macro-data-cards"
+import { EconomicCalendarWidget } from "@/components/economic-calendar-widget"
 import { getPublishedPosts } from "@/lib/posts"
 
 export default async function HomePage() {
@@ -78,6 +80,12 @@ export default async function HomePage() {
 
         {/* Tag Cloud */}
         <TagCloud />
+
+        {/* Macro Data Cards */}
+        <MacroDataCards />
+
+        {/* Economic Calendar */}
+        <EconomicCalendarWidget />
       </main>
 
       <BlogFooter />
