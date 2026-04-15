@@ -202,7 +202,7 @@ function serializeFrontmatter(meta: PostFrontmatter): string {
 
 // 重新验证文章缓存（在写入操作后调用）
 export function revalidatePostsCache() {
-  revalidateTag(POSTS_CACHE_TAG, 'default')
+  revalidateTag(POSTS_CACHE_TAG)
 }
 
 // 创建文章
