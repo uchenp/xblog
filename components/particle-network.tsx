@@ -70,6 +70,10 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     const isDark = document.documentElement.classList.contains('dark')
 
     if (isDark) {
+      // 深蓝色夜空底色
+      ctx.fillStyle = '#0a0e27'
+      ctx.fillRect(0, 0, width, height)
+
       // 随机生成流星
       if (time - lastShootingStarTime.current > SHOOTING_STAR_INTERVAL) {
         if (Math.random() < 0.3) { // 30% 概率生成
