@@ -15,14 +15,28 @@ interface Star {
   baseOpacity: number
 }
 
-// 暗色模式：闪烁星星 / 亮色模式：渐变光晕
+interface ShootingStar {
+  x: number
+  y: number
+  length: number
+  speed: number
+  angle: number
+  opacity: number
+  life: number
+  maxLife: number
+}
+
+// 暗色模式：闪烁星星 + 流星 / 亮色模式：渐变光晕
 export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const starsRef = useRef<Star[]>([])
+  const shootingStarsRef = useRef<ShootingStar[]>([])
   const mouseRef = useRef({ x: -9999, y: -9999 })
   const animationFrameRef = useRef<number>(0)
+  const lastShootingStarTime = useRef(0)
 
   const STAR_COUNT = 150
+  const SHOOTING_STAR_INTERVAL = 4000 // 每 4 秒尝试生成流星
 
   const initStars = useCallback((width: number, height: number) => {
     const stars: Star[] = []
@@ -56,7 +70,34 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     const isDark = document.documentElement.classList.contains('dark')
 
     if (isDark) {
-      drawStars(ctx, width, height, mouse, time)
+      // 随机生成流星
+      if (time - lastShootingStarTime.current > SHOOTING_STAR_INTERVAL) {
+        if (Math.random() < 0.3) { // 30% 概率生成
+          shootingStarsRef.current.push({
+            x: Math.random() * width * 0.8,
+            y: Math.random() * height * 0.4,
+            length: Math.random() * 80 + 60,
+            speed: Math.random() * 8 + 6,
+            angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3, // 约 45 度角
+            opacity: 1,
+            life: 0,
+            maxLife: Math.random() * 40 + 30,
+          })
+        }
+        lastShootingStarTime.current = time
+      }
+
+      drawStars(ctx, width, height, mouse, time, shootingStarsRef.current, starsRef.current)
+
+      // 更新流星
+      shootingStarsRef.current = shootingStarsRef.current.filter((s) => {
+        s.x += Math.cos(s.angle) * s.speed
+        s.y += Math.sin(s.angle) * s.speed
+        s.life++
+        // 渐隐
+        s.opacity = Math.max(0, 1 - s.life / s.maxLife)
+        return s.life < s.maxLife
+      })
     } else {
       drawGradient(ctx, width, height, mouse, time)
     }
@@ -113,16 +154,16 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   )
 }
 
-// 暗色模式：闪烁星星
+// 暗色模式：闪烁星星 + 流星
 function drawStars(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   mouse: { x: number; y: number },
-  time: number
+  time: number,
+  shootingStars: ShootingStar[],
+  stars: Star[]
 ) {
-  const stars = starsRef.current
-
   stars.forEach((star) => {
     // 闪烁计算
     const twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset)
@@ -184,6 +225,34 @@ function drawStars(
     ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.2})`
     ctx.beginPath()
     ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  // 绘制流星
+  shootingStars.forEach((star) => {
+    const tailX = star.x - Math.cos(star.angle) * star.length
+    const tailY = star.y - Math.sin(star.angle) * star.length
+
+    // 流星尾巴渐变
+    const gradient = ctx.createLinearGradient(tailX, tailY, star.x, star.y)
+    gradient.addColorStop(0, `rgba(255, 255, 255, 0)`)
+    gradient.addColorStop(0.7, `rgba(200, 220, 255, ${star.opacity * 0.3})`)
+    gradient.addColorStop(1, `rgba(255, 255, 255, ${star.opacity * 0.8})`)
+
+    ctx.strokeStyle = gradient
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(tailX, tailY)
+    ctx.lineTo(star.x, star.y)
+    ctx.stroke()
+
+    // 流星头部光点
+    const headGradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, 4)
+    headGradient.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`)
+    headGradient.addColorStop(1, `rgba(255, 255, 255, 0)`)
+    ctx.fillStyle = headGradient
+    ctx.beginPath()
+    ctx.arc(star.x, star.y, 4, 0, Math.PI * 2)
     ctx.fill()
   })
 
