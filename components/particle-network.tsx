@@ -6,11 +6,38 @@ interface ParticleNetworkProps {
   className?: string
 }
 
-// 暗色模式：霓虹灯效果 / 亮色模式：渐变光晕
+interface Star {
+  x: number
+  y: number
+  radius: number
+  twinkleSpeed: number
+  twinkleOffset: number
+  baseOpacity: number
+}
+
+// 暗色模式：闪烁星星 / 亮色模式：渐变光晕
 export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const starsRef = useRef<Star[]>([])
   const mouseRef = useRef({ x: -9999, y: -9999 })
   const animationFrameRef = useRef<number>(0)
+
+  const STAR_COUNT = 150
+
+  const initStars = useCallback((width: number, height: number) => {
+    const stars: Star[] = []
+    for (let i = 0; i < STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.5 + 0.3,
+        twinkleSpeed: Math.random() * 0.003 + 0.001,
+        twinkleOffset: Math.random() * Math.PI * 2,
+        baseOpacity: Math.random() * 0.5 + 0.3,
+      })
+    }
+    starsRef.current = stars
+  }, [])
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -22,17 +49,15 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     const width = canvas.width
     const height = canvas.height
     const mouse = mouseRef.current
-    const time = Date.now() * 0.001
+    const time = Date.now()
 
     ctx.clearRect(0, 0, width, height)
 
     const isDark = document.documentElement.classList.contains('dark')
 
     if (isDark) {
-      // === 暗色模式：霓虹灯效果 ===
-      drawNeon(ctx, width, height, mouse, time)
+      drawStars(ctx, width, height, mouse, time)
     } else {
-      // === 亮色模式：渐变光晕 ===
       drawGradient(ctx, width, height, mouse, time)
     }
 
@@ -48,6 +73,7 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       if (!parent) return
       canvas.width = parent.clientWidth
       canvas.height = parent.clientHeight
+      initStars(canvas.width, canvas.height)
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -67,6 +93,7 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mouseleave', handleMouseLeave)
 
+    initStars(canvas.width, canvas.height)
     draw()
 
     return () => {
@@ -75,7 +102,7 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       canvas.removeEventListener('mouseleave', handleMouseLeave)
       cancelAnimationFrame(animationFrameRef.current)
     }
-  }, [draw])
+  }, [draw, initStars])
 
   return (
     <canvas
@@ -86,101 +113,88 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   )
 }
 
-// 暗色模式：霓虹灯效果
-function drawNeon(
+// 暗色模式：闪烁星星
+function drawStars(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   mouse: { x: number; y: number },
   time: number
 ) {
-  // 霓虹线条 - 流动的发光线条
-  const lineCount = 5
-  const neonColors = [
-    { r: 0, g: 255, b: 255 },    // 青色
-    { r: 255, g: 0, b: 255 },     // 品红
-    { r: 0, g: 255, b: 128 },     // 绿色
-    { r: 255, g: 100, b: 50 },    // 橙色
-    { r: 100, g: 100, b: 255 },   // 蓝色
-  ]
+  const stars = starsRef.current
 
-  for (let i = 0; i < lineCount; i++) {
-    const color = neonColors[i]
-    const yOffset = (height / (lineCount + 1)) * (i + 1)
-    const amplitude = 30 + Math.sin(time * 0.5 + i) * 15
-    const frequency = 0.003 + i * 0.001
-    const speed = time * (0.5 + i * 0.2)
+  stars.forEach((star) => {
+    // 闪烁计算
+    const twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset)
+    const opacity = star.baseOpacity * (0.5 + twinkle * 0.5)
 
-    // 绘制发光线条
-    ctx.beginPath()
-    for (let x = 0; x < width; x += 2) {
-      const y = yOffset + Math.sin(x * frequency + speed) * amplitude
-      if (x === 0) {
-        ctx.moveTo(x, y)
-      } else {
-        ctx.lineTo(x, y)
-      }
+    // 十字星光效果（较大的星星）
+    if (star.radius > 1.2) {
+      const crossSize = star.radius * 4
+      const crossOpacity = opacity * 0.3
+
+      // 水平光线
+      const hGradient = ctx.createLinearGradient(
+        star.x - crossSize, star.y,
+        star.x + crossSize, star.y
+      )
+      hGradient.addColorStop(0, `rgba(255, 255, 255, 0)`)
+      hGradient.addColorStop(0.5, `rgba(255, 255, 255, ${crossOpacity})`)
+      hGradient.addColorStop(1, `rgba(255, 255, 255, 0)`)
+
+      ctx.strokeStyle = hGradient
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(star.x - crossSize, star.y)
+      ctx.lineTo(star.x + crossSize, star.y)
+      ctx.stroke()
+
+      // 垂直光线
+      const vGradient = ctx.createLinearGradient(
+        star.x, star.y - crossSize,
+        star.x, star.y + crossSize
+      )
+      vGradient.addColorStop(0, `rgba(255, 255, 255, 0)`)
+      vGradient.addColorStop(0.5, `rgba(255, 255, 255, ${crossOpacity})`)
+      vGradient.addColorStop(1, `rgba(255, 255, 255, 0)`)
+
+      ctx.strokeStyle = vGradient
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(star.x, star.y - crossSize)
+      ctx.lineTo(star.x, star.y + crossSize)
+      ctx.stroke()
     }
 
-    // 外层光晕
-    ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-    ctx.lineWidth = 8
-    ctx.shadowBlur = 20
-    ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`
-    ctx.stroke()
-
-    // 中层光晕
-    ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`
-    ctx.lineWidth = 3
-    ctx.shadowBlur = 10
-    ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`
-    ctx.stroke()
-
-    // 核心亮线
-    ctx.strokeStyle = `rgba(${Math.min(color.r + 100, 255)}, ${Math.min(color.g + 100, 255)}, ${Math.min(color.b + 100, 255)}, 0.6)`
-    ctx.lineWidth = 1
-    ctx.shadowBlur = 5
-    ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`
-    ctx.stroke()
-  }
-
-  ctx.shadowBlur = 0 // 重置 shadow
-
-  // 霓虹光点 - 在线条交叉处闪烁
-  const dotCount = 20
-  for (let i = 0; i < dotCount; i++) {
-    const x = (width / dotCount) * i + Math.sin(time * 0.8 + i * 0.5) * 40
-    const lineIndex = Math.floor((i % lineCount))
-    const yOffset = (height / (lineCount + 1)) * (lineIndex + 1)
-    const amplitude = 30 + Math.sin(time * 0.5 + lineIndex) * 15
-    const frequency = 0.003 + lineIndex * 0.001
-    const speed = time * (0.5 + lineIndex * 0.2)
-    const y = yOffset + Math.sin(x * frequency + speed) * amplitude
-
-    const flicker = Math.sin(time * 3 + i * 1.7) * 0.5 + 0.5
-    const color = neonColors[lineIndex]
-    const size = 2 + flicker * 2
-
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 4)
-    gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${0.6 * flicker})`)
-    gradient.addColorStop(0.5, `rgba(${color.r}, ${color.g}, ${color.b}, ${0.2 * flicker})`)
-    gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`)
+    // 星星光晕
+    const gradient = ctx.createRadialGradient(
+      star.x, star.y, 0,
+      star.x, star.y, star.radius * 3
+    )
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`)
+    gradient.addColorStop(0.3, `rgba(200, 220, 255, ${opacity * 0.5})`)
+    gradient.addColorStop(1, `rgba(255, 255, 255, 0)`)
 
     ctx.fillStyle = gradient
     ctx.beginPath()
-    ctx.arc(x, y, size * 4, 0, Math.PI * 2)
+    ctx.arc(star.x, star.y, star.radius * 3, 0, Math.PI * 2)
     ctx.fill()
-  }
 
-  // 鼠标跟随霓虹光点
+    // 核心亮点
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.2})`
+    ctx.beginPath()
+    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
+    ctx.fill()
+  })
+
+  // 鼠标附近的星星更亮
   if (mouse.x > 0 && mouse.y > 0) {
-    const mouseGradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 100)
-    mouseGradient.addColorStop(0, 'rgba(0, 255, 255, 0.15)')
-    mouseGradient.addColorStop(0.5, 'rgba(255, 0, 255, 0.08)')
-    mouseGradient.addColorStop(1, 'rgba(0, 255, 255, 0)')
+    const mouseGradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120)
+    mouseGradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)')
+    mouseGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.fillStyle = mouseGradient
     ctx.beginPath()
-    ctx.arc(mouse.x, mouse.y, 100, 0, Math.PI * 2)
+    ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2)
     ctx.fill()
   }
 }
@@ -193,10 +207,9 @@ function drawGradient(
   mouse: { x: number; y: number },
   time: number
 ) {
-  // 渐变光晕 1 - 左上角
   const gradient1 = ctx.createRadialGradient(
-    width * 0.2 + Math.sin(time * 0.3) * 80,
-    height * 0.3 + Math.cos(time * 0.2) * 40,
+    width * 0.2 + Math.sin(time * 0.0003) * 80,
+    height * 0.3 + Math.cos(time * 0.0002) * 40,
     0,
     width * 0.2,
     height * 0.3,
@@ -208,10 +221,9 @@ function drawGradient(
   ctx.fillStyle = gradient1
   ctx.fillRect(0, 0, width, height)
 
-  // 渐变光晕 2 - 右下角
   const gradient2 = ctx.createRadialGradient(
-    width * 0.8 + Math.cos(time * 0.25) * 60,
-    height * 0.7 + Math.sin(time * 0.35) * 50,
+    width * 0.8 + Math.cos(time * 0.00025) * 60,
+    height * 0.7 + Math.sin(time * 0.00035) * 50,
     0,
     width * 0.8,
     height * 0.7,
@@ -223,11 +235,10 @@ function drawGradient(
   ctx.fillStyle = gradient2
   ctx.fillRect(0, 0, width, height)
 
-  // 流动光波纹
   const centerX = width * 0.5
   const centerY = height * 0.5
   for (let i = 0; i < 3; i++) {
-    const phase = (time * 0.5 + i * 0.33) % 1
+    const phase = (time * 0.0005 + i * 0.33) % 1
     const radius = phase * Math.max(width, height) * 0.6
     const opacity = (1 - phase) * 0.04
     ctx.beginPath()
@@ -237,7 +248,6 @@ function drawGradient(
     ctx.stroke()
   }
 
-  // 鼠标跟随光点
   if (mouse.x > 0 && mouse.y > 0) {
     const mouseGradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150)
     mouseGradient.addColorStop(0, 'rgba(99, 102, 241, 0.08)')
