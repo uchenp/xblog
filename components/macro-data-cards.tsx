@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowUpRight, ArrowDownRight, Minus, BarChart3, Filter } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Minus, BarChart3 } from 'lucide-react'
+import { CollapsibleSection } from '@/components/collapsible-section'
 import { macroIndicators, getCategoryLabel, getCategoryColor, type MacroIndicator } from '@/lib/macro-data'
 
 const categories = [
@@ -17,8 +18,6 @@ const categories = [
 function IndicatorCard({ indicator }: { indicator: MacroIndicator }) {
   const isPositive = (indicator.yoy ?? 0) > 0
   const isNeutral = (indicator.yoy ?? 0) === 0
-
-  // 失业率下降是好事，特殊处理
   const isUnemployment = indicator.id === 'urban_unemployment'
   const isGood = isUnemployment ? !isPositive : isPositive
 
@@ -86,8 +85,10 @@ export function MacroDataCards() {
     ? macroIndicators
     : macroIndicators.filter((i) => i.category === activeCategory)
 
+  const summary = `${macroIndicators.length} 项指标 · ${macroIndicators[0]?.period}`
+
   return (
-    <div className="rounded-xl border border-border/50 bg-card/30 p-5">
+    <CollapsibleSection title="经济指标" summary={summary}>
       {/* 分类筛选 */}
       <div className="flex flex-wrap gap-2 mb-5">
         {categories.map((cat) => (
@@ -117,6 +118,6 @@ export function MacroDataCards() {
           该分类暂无数据
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   )
 }

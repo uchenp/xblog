@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Calendar, Clock, ChevronDown, ChevronUp, Globe2 } from 'lucide-react'
+import { Calendar, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { CollapsibleSection } from '@/components/collapsible-section'
 import {
   economicCalendar,
   getCountryStyle,
@@ -29,7 +30,6 @@ function EventRow({ event }: { event: EconomicEvent }) {
       onClick={() => setExpanded(!expanded)}
     >
       <div className="grid grid-cols-12 gap-2 py-3 px-4 items-center">
-        {/* 日期 */}
         <div className="col-span-3 sm:col-span-2 flex items-center gap-2">
           <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           <div>
@@ -41,14 +41,12 @@ function EventRow({ event }: { event: EconomicEvent }) {
           </div>
         </div>
 
-        {/* 国家 */}
         <div className="col-span-2 sm:col-span-1 flex justify-center">
           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${countryStyle.bg}`}>
             {countryStyle.flag}
           </span>
         </div>
 
-        {/* 指标 */}
         <div className="col-span-5 sm:col-span-6">
           <p className="text-sm font-medium text-foreground truncate">{event.indicator}</p>
           {expanded && (
@@ -56,7 +54,6 @@ function EventRow({ event }: { event: EconomicEvent }) {
           )}
         </div>
 
-        {/* 重要程度 */}
         <div className="col-span-2 sm:col-span-3 flex justify-end items-center gap-2">
           {event.forecast && (
             <span className="hidden sm:inline text-xs text-muted-foreground">
@@ -74,7 +71,6 @@ function EventRow({ event }: { event: EconomicEvent }) {
         </div>
       </div>
 
-      {/* 展开详情 */}
       {expanded && (
         <div className="px-4 pb-3 pt-1 bg-muted/20">
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -115,7 +111,6 @@ export function EconomicCalendarWidget() {
       .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
   }, [selectedCountry])
 
-  // 按日期分组
   const groupedEvents = useMemo(() => {
     const groups: Record<string, EconomicEvent[]> = {}
     filteredEvents.forEach((event) => {
@@ -125,8 +120,10 @@ export function EconomicCalendarWidget() {
     return groups
   }, [filteredEvents])
 
+  const summary = `${filteredEvents.length} 项数据发布`
+
   return (
-    <div>
+    <CollapsibleSection title="宏观日历" summary={summary}>
       {/* 国家筛选 */}
       <div className="flex flex-wrap gap-2 mb-5">
         <button
@@ -158,8 +155,7 @@ export function EconomicCalendarWidget() {
       </div>
 
       {/* 事件列表 */}
-      <div className="rounded-xl border border-border/50 bg-card/30 overflow-hidden">
-        {/* 表头 */}
+      <div className="rounded-xl border border-border/50 overflow-hidden">
         <div className="grid grid-cols-12 gap-2 py-3 px-4 bg-muted/50 text-xs font-medium text-muted-foreground">
           <div className="col-span-3 sm:col-span-2">日期/时间</div>
           <div className="col-span-2 sm:col-span-1 text-center">国家</div>
@@ -167,7 +163,6 @@ export function EconomicCalendarWidget() {
           <div className="col-span-2 sm:col-span-3 text-right">重要程度</div>
         </div>
 
-        {/* 按日期分组的事件 */}
         {Object.entries(groupedEvents).map(([date, events]) => (
           <div key={date}>
             {events.map((event) => (
@@ -183,13 +178,12 @@ export function EconomicCalendarWidget() {
         )}
       </div>
 
-      {/* 说明 */}
       <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
         <span className="shrink-0 mt-0.5">💡</span>
         <p>
           点击事件可展开查看前值、预期值和公布值。数据来源于各国统计局和央行公开信息，仅供参考。
         </p>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }

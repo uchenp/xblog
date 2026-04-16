@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Globe2, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
+import { CollapsibleSection } from '@/components/collapsible-section'
 import {
   countriesData,
   indicators,
@@ -24,7 +25,6 @@ export function WorldHeatmap() {
 
   const activeConfig = indicators.find((i) => i.key === activeIndicator)!
 
-  // 构建国家数据映射
   const dataMap = useMemo(() => {
     const map = new Map<string, CountryData>()
     countriesData.forEach((c) => map.set(c.id, c))
@@ -55,8 +55,10 @@ export function WorldHeatmap() {
     setHoveredId(null)
   }
 
+  const summary = `${countriesData.length} 个国家/地区 · ${activeConfig.label}`
+
   return (
-    <div>
+    <CollapsibleSection title="全球热力图" summary={summary}>
       {/* 指标切换 */}
       <div className="flex flex-wrap gap-2 mb-5">
         {indicators.map((ind) => (
@@ -90,16 +92,14 @@ export function WorldHeatmap() {
       </div>
 
       {/* SVG 地图 */}
-      <div className="relative rounded-xl border border-border/50 bg-card/30 overflow-hidden">
+      <div className="relative rounded-xl border border-border/50 overflow-hidden">
         <svg
           viewBox="0 0 860 380"
           className="w-full h-auto"
           style={{ minHeight: '300px' }}
         >
-          {/* 海洋背景 */}
           <rect width="860" height="380" fill="transparent" />
 
-          {/* 国家 */}
           {countryPaths.map((path) => {
             const country = dataMap.get(path.id)
             if (!country) return null
@@ -126,7 +126,6 @@ export function WorldHeatmap() {
                     filter: isHovered ? 'brightness(1.2)' : 'none',
                   }}
                 />
-                {/* 国家代码标签 */}
                 {countryPaths.length < 50 && (
                   <text
                     x={path.center.x}
@@ -149,7 +148,6 @@ export function WorldHeatmap() {
           })}
         </svg>
 
-        {/* Tooltip */}
         {tooltip && (
           <div
             className="absolute z-50 pointer-events-none"
@@ -197,7 +195,6 @@ export function WorldHeatmap() {
         )}
       </div>
 
-      {/* 数据说明 */}
       <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
         <span className="shrink-0 mt-0.5">📊</span>
         <p>
@@ -205,11 +202,10 @@ export function WorldHeatmap() {
           数据为 2026 年 Q1 估算值，仅供参考。悬停可查看所有指标详情。
         </p>
       </div>
-    </div>
+    </CollapsibleSection>
   )
 }
 
-// 国家代码转国旗 emoji
 function getFlagEmoji(countryCode: string): string {
   const codePoints = countryCode
     .toUpperCase()

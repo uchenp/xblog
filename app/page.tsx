@@ -97,12 +97,7 @@ export default async function HomePage() {
 
         {/* 宏观数据板块 */}
         <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
-          <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">宏观数据</h2>
-          </div>
-          
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             <MacroDataCards />
             <EconomicCalendarWidget />
             <WorldHeatmap />
