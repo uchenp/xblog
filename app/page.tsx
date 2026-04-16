@@ -60,7 +60,7 @@ export default async function HomePage() {
         </section>
 
         {/* Daily Quote - 轻量版 */}
-        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
+        <section className="mx-auto max-w-5xl px-4 pb-8 sm:px-6 sm:pb-10">
           <DailyQuote compact />
         </section>
 

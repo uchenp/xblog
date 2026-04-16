@@ -36,7 +36,7 @@ export function DailyQuote({ compact = false }: DailyQuoteProps) {
 
   if (compact) {
     return (
-      <div className="rounded-xl border border-border bg-card/60 px-5 py-5 mx-4 sm:mx-6">
+      <div className="rounded-xl border border-border bg-card/60 px-5 py-5">
         <div className="flex items-start gap-3">
           <BookOpen className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
           <div className="min-w-0">
