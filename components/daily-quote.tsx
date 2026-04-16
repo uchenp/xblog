@@ -10,7 +10,11 @@ interface QuoteData {
   dynasty?: string
 }
 
-export function DailyQuote() {
+interface DailyQuoteProps {
+  compact?: boolean
+}
+
+export function DailyQuote({ compact = false }: DailyQuoteProps) {
   const [quote, setQuote] = useState<QuoteData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -28,6 +32,36 @@ export function DailyQuote() {
 
   if (isLoading || !quote) {
     return null
+  }
+
+  if (compact) {
+    return (
+      <div className="rounded-xl border border-border/50 bg-muted/30 px-6 py-5">
+        <div className="flex items-start gap-3">
+          <BookOpen className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="text-base leading-relaxed text-foreground">
+              {quote.text}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-medium">—— {quote.author}</span>
+              {quote.dynasty && (
+                <>
+                  <span>·</span>
+                  <span>{quote.dynasty}</span>
+                </>
+              )}
+              {quote.source && (
+                <>
+                  <span>·</span>
+                  <span className="italic">{quote.source}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

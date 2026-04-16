@@ -9,6 +9,7 @@ import { MacroDataCards } from "@/components/macro-data-cards"
 import { EconomicCalendarWidget } from "@/components/economic-calendar-widget"
 import { HeroBackground } from "@/components/hero-background"
 import { WorldHeatmap } from "@/components/world-heatmap"
+import { MacroSnapshot } from "@/components/macro-snapshot"
 import { getPublishedPosts } from "@/lib/posts"
 
 export default async function HomePage() {
@@ -21,7 +22,7 @@ export default async function HomePage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 overflow-hidden">
+        <section className="relative mx-auto max-w-5xl px-4 pt-8 pb-10 sm:px-6 sm:pt-12 sm:pb-14 overflow-hidden">
           {/* 动态背景 */}
           <div className="absolute inset-0 -z-10">
             <HeroBackground />
@@ -52,16 +53,14 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
+            
+            {/* 核心指标快照 */}
+            <MacroSnapshot />
           </div>
         </section>
 
-        {/* Daily Quote */}
-        <section className="mx-auto max-w-5xl px-4 pb-6 sm:px-6">
-          <DailyQuote />
-        </section>
-
         {/* Recent Posts */}
-        <section className="mx-auto max-w-5xl px-4 pb-12 sm:px-6 sm:pb-16">
+        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
           <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -88,17 +87,27 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Daily Quote - 轻量版 */}
+        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
+          <DailyQuote compact />
+        </section>
+
         {/* Tag Cloud */}
         <TagCloud />
 
-        {/* Macro Data Cards */}
-        <MacroDataCards />
-
-        {/* Economic Calendar */}
-        <EconomicCalendarWidget />
-
-        {/* World Heatmap */}
-        <WorldHeatmap />
+        {/* 宏观数据板块 */}
+        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
+          <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">宏观数据</h2>
+          </div>
+          
+          <div className="flex flex-col gap-8">
+            <MacroDataCards />
+            <EconomicCalendarWidget />
+            <WorldHeatmap />
+          </div>
+        </section>
       </main>
 
       <BlogFooter />
