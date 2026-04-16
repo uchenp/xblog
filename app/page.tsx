@@ -74,7 +74,7 @@ export default async function HomePage() {
             </Link>
           </div>
           
-          <div className="divide-y divide-border">
+          <div className="flex flex-col gap-4">
             {recentPosts.length > 0 ? (
               recentPosts.map((post) => (
                 <PostCard key={post.slug} post={post} />

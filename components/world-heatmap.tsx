@@ -56,17 +56,9 @@ export function WorldHeatmap() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-12 sm:px-6">
-      <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
-        <Globe2 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">全球经济热力图</h2>
-        <span className="text-xs text-muted-foreground">
-          点击切换指标，悬停查看详情
-        </span>
-      </div>
-
+    <div>
       {/* 指标切换 */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-5">
         {indicators.map((ind) => (
           <button
             key={ind.key}
@@ -98,7 +90,7 @@ export function WorldHeatmap() {
       </div>
 
       {/* SVG 地图 */}
-      <div className="relative rounded-xl border border-border bg-card overflow-hidden">
+      <div className="relative rounded-xl border border-border/50 bg-card/30 overflow-hidden">
         <svg
           viewBox="0 0 860 380"
           className="w-full h-auto"

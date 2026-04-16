@@ -9,33 +9,35 @@ export async function TagCloud() {
   const displayTags = tags.slice(0, 20)
   
   return (
-    <section className="mx-auto max-w-5xl px-4 pb-12 sm:px-6">
-      <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
-        <div className="flex items-center gap-2">
-          <Tag className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">热门标签</h2>
+    <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
+      <div className="rounded-xl border border-border/50 bg-card/30 p-6">
+        <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-5">
+          <div className="flex items-center gap-2">
+            <Tag className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">热门标签</h2>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {tags.length} 个标签
+          </span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {tags.length} 个标签
-        </span>
-      </div>
-      
-      <div className="flex flex-wrap gap-2">
-        {displayTags.map((tag, index) => (
-          <Link
-            key={tag}
-            href={`/tags/${encodeURIComponent(tag)}`}
-            className={`
-              inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-              text-sm font-medium transition-all
-              hover:scale-105 hover:shadow-md
-              ${getTagColor(index)}
-            `}
-          >
-            <Tag className="h-3.5 w-3.5" />
-            {tag}
-          </Link>
-        ))}
+        
+        <div className="flex flex-wrap gap-2">
+          {displayTags.map((tag, index) => (
+            <Link
+              key={tag}
+              href={`/tags/${encodeURIComponent(tag)}`}
+              className={`
+                inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                text-sm font-medium transition-all
+                hover:scale-105
+                ${getTagColor(index)}
+              `}
+            >
+              <Tag className="h-3.5 w-3.5" />
+              {tag}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   )

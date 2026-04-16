@@ -126,17 +126,9 @@ export function EconomicCalendarWidget() {
   }, [filteredEvents])
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-12 sm:px-6">
-      <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
-        <Globe2 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">今日宏观日历</h2>
-        <span className="text-xs text-muted-foreground">
-          共 {filteredEvents.length} 项数据发布
-        </span>
-      </div>
-
+    <div>
       {/* 国家筛选 */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-5">
         <button
           onClick={() => setSelectedCountry('all')}
           className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -166,7 +158,7 @@ export function EconomicCalendarWidget() {
       </div>
 
       {/* 事件列表 */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl border border-border/50 bg-card/30 overflow-hidden">
         {/* 表头 */}
         <div className="grid grid-cols-12 gap-2 py-3 px-4 bg-muted/50 text-xs font-medium text-muted-foreground">
           <div className="col-span-3 sm:col-span-2">日期/时间</div>

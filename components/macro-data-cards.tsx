@@ -87,17 +87,9 @@ export function MacroDataCards() {
     : macroIndicators.filter((i) => i.category === activeCategory)
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-12 sm:px-6">
-      <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
-        <BarChart3 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">宏观经济数据</h2>
-        <span className="text-xs text-muted-foreground">
-          数据更新于 {macroIndicators[0]?.period}
-        </span>
-      </div>
-
+    <div className="rounded-xl border border-border/50 bg-card/30 p-5">
       {/* 分类筛选 */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-5">
         {categories.map((cat) => (
           <button
             key={cat.key}

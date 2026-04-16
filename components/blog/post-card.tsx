@@ -13,41 +13,40 @@ export function PostCard({ post }: PostCardProps) {
   const readingTime = post.readingTime || 1
   
   return (
-    <article className="group">
-      <div className="flex flex-col gap-3 py-4">
+    <article className="group rounded-xl border border-border/40 bg-card/30 p-5 transition-all hover:border-border hover:bg-card/50 hover:shadow-sm">
+      <div className="flex flex-col gap-3">
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <time>
+          <time className="font-medium">
             {format(new Date(post.publishedAt), "yyyy 年 M 月 d 日", { locale: zhCN })}
           </time>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            {readingTime} 分钟阅读
+            {readingTime} 分钟
           </span>
         </div>
         <Link href={`/posts/${post.slug}`} className="block">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
             {post.title}
           </h2>
-          <p className="line-clamp-2 text-muted-foreground leading-relaxed">
+          <p className="line-clamp-2 text-sm text-muted-foreground leading-relaxed mt-1">
             {post.excerpt}
           </p>
         </Link>
         {(post.tags?.length > 0 || post.categories?.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2 pt-2">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             {post.categories?.map((category) => (
-              <Link
+              <span
                 key={category}
-                href={`/categories/${encodeURIComponent(category)}`}
-                className="inline-flex items-center gap-1 rounded bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-muted/80 transition-colors"
+                className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary transition-colors"
               >
-                📁 {category}
-              </Link>
+                {category}
+              </span>
             ))}
-            {post.tags?.map((tag) => (
+            {post.tags?.slice(0, 3).map((tag) => (
               <Link
                 key={tag}
                 href={`/tags/${encodeURIComponent(tag)}`}
-                className="inline-flex items-center gap-1 rounded bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-muted/80 transition-colors"
+                className="inline-flex items-center rounded-md bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 #{tag}
               </Link>
