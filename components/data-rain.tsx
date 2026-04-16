@@ -38,7 +38,7 @@ export function DataRain({ className = '' }: DataRainProps) {
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
+      className={`absolute inset-0 w-full h-full pointer-events-none rounded-2xl ${className}`}
       style={{ zIndex: 1 }}
     />
   )

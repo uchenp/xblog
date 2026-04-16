@@ -168,7 +168,7 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 w-full h-full pointer-events-auto ${className}`}
+      className={`absolute inset-0 w-full h-full pointer-events-auto rounded-2xl ${className}`}
       style={{ zIndex: 0 }}
     />
   )
