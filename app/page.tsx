@@ -59,6 +59,11 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Daily Quote - 轻量版 */}
+        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
+          <DailyQuote compact />
+        </section>
+
         {/* Recent Posts */}
         <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
           <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
@@ -85,11 +90,6 @@ export default async function HomePage() {
               </p>
             )}
           </div>
-        </section>
-
-        {/* Daily Quote - 轻量版 */}
-        <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
-          <DailyQuote compact />
         </section>
 
         {/* Tag Cloud */}
