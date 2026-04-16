@@ -24,12 +24,12 @@ export default async function HomePage() {
         {/* Hero Section */}
         <section className="relative mx-auto max-w-5xl px-4 pt-8 pb-8 sm:px-6 sm:pt-10 sm:pb-10 overflow-hidden">
           {/* 动态背景 */}
-          <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-4 sm:inset-6 -z-10 rounded-2xl overflow-hidden">
             <HeroBackground />
           </div>
           
           {/* 内容层 */}
-          <div className="relative z-10">
+          <div className="relative z-10 mx-4 sm:mx-6">
             <div className="flex flex-col gap-3">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                 FelixView
