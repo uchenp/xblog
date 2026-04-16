@@ -22,7 +22,7 @@ export default async function HomePage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative mx-auto max-w-5xl px-4 pt-8 pb-10 sm:px-6 sm:pt-12 sm:pb-14 overflow-hidden">
+        <section className="relative mx-auto max-w-5xl px-4 pt-8 pb-8 sm:px-6 sm:pt-10 sm:pb-10 overflow-hidden">
           {/* 动态背景 */}
           <div className="absolute inset-0 -z-10">
             <HeroBackground />
