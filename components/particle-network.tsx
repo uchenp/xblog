@@ -70,9 +70,25 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     const isDark = document.documentElement.classList.contains('dark')
 
     if (isDark) {
-      // 深蓝色夜空底色
-      ctx.fillStyle = '#0a0e27'
+      // 深邃渐变夜空：从上方的深靛蓝到下方略浅的蓝紫，营造高远感
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, height)
+      skyGradient.addColorStop(0, '#050814')      // 天顶：极深蓝
+      skyGradient.addColorStop(0.4, '#0a1128')    // 中部：深靛蓝
+      skyGradient.addColorStop(0.7, '#121d40')    // 中下：蓝紫
+      skyGradient.addColorStop(1, '#1a2850')      // 地平线：略亮的蓝灰
+      ctx.fillStyle = skyGradient
       ctx.fillRect(0, 0, width, height)
+
+      // 微弱的大气辉光（地平线附近）
+      const horizonGlow = ctx.createRadialGradient(
+        width * 0.5, height, 0,
+        width * 0.5, height, height * 0.6
+      )
+      horizonGlow.addColorStop(0, 'rgba(30, 60, 120, 0.15)')
+      horizonGlow.addColorStop(0.5, 'rgba(20, 40, 100, 0.05)')
+      horizonGlow.addColorStop(1, 'rgba(10, 20, 60, 0)')
+      ctx.fillStyle = horizonGlow
+      ctx.fillRect(0, height * 0.4, width, height * 0.6)
 
       // 随机生成流星
       if (time - lastShootingStarTime.current > SHOOTING_STAR_INTERVAL) {
@@ -211,14 +227,14 @@ function drawStars(
       ctx.stroke()
     }
 
-    // 星星光晕
+    // 星星光晕（偏冷蓝白，更贴近真实夜空）
     const gradient = ctx.createRadialGradient(
       star.x, star.y, 0,
       star.x, star.y, star.radius * 3
     )
-    gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`)
-    gradient.addColorStop(0.3, `rgba(200, 220, 255, ${opacity * 0.5})`)
-    gradient.addColorStop(1, `rgba(255, 255, 255, 0)`)
+    gradient.addColorStop(0, `rgba(220, 235, 255, ${opacity})`)
+    gradient.addColorStop(0.3, `rgba(180, 200, 245, ${opacity * 0.4})`)
+    gradient.addColorStop(1, `rgba(220, 235, 255, 0)`)
 
     ctx.fillStyle = gradient
     ctx.beginPath()
