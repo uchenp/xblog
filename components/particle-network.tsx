@@ -8,26 +8,23 @@ interface Particle {
   vx: number
   vy: number
   radius: number
-  opacity: number
-  pulseSpeed: number
-  pulseOffset: number
+  baseOpacity: number
 }
 
 interface ParticleNetworkProps {
   className?: string
 }
 
-// 粒子网络背景 - 粒子之间连线形成网络效果
+// 精致粒子网络 - 类似星空的微妙背景效果
 export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
-  const mouseRef = useRef({ x: -1000, y: -1000 })
+  const mouseRef = useRef({ x: -9999, y: -9999 })
   const animationFrameRef = useRef<number>(0)
-  const timeRef = useRef(0)
 
-  const PARTICLE_COUNT = 80
-  const CONNECTION_DISTANCE = 150
-  const MOUSE_RADIUS = 200
+  const PARTICLE_COUNT = 50
+  const CONNECTION_DISTANCE = 120
+  const MOUSE_REPEL_RADIUS = 100
 
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = []
@@ -35,12 +32,10 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.5 + 0.2,
-        pulseSpeed: Math.random() * 0.02 + 0.01,
-        pulseOffset: Math.random() * Math.PI * 2,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: Math.random() * 1.2 + 0.5,
+        baseOpacity: Math.random() * 0.3 + 0.1,
       })
     }
     particlesRef.current = particles
@@ -58,18 +53,14 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     const particles = particlesRef.current
     const mouse = mouseRef.current
 
-    timeRef.current += 1
-
     ctx.clearRect(0, 0, width, height)
 
-    // 检测主题
     const isDark = document.documentElement.classList.contains('dark')
-    const baseColor = isDark ? '180, 180, 200' : '100, 100, 120'
-    const primaryColor = isDark ? '140, 160, 255' : '80, 100, 220'
+    const dotColor = isDark ? '200, 200, 220' : '120, 120, 140'
+    const lineColor = isDark ? '160, 160, 190' : '140, 140, 165'
 
     // 更新和绘制粒子
     particles.forEach((particle) => {
-      // 更新位置
       particle.x += particle.vx
       particle.y += particle.vy
 
@@ -77,33 +68,42 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       if (particle.x < 0 || particle.x > width) particle.vx *= -1
       if (particle.y < 0 || particle.y > height) particle.vy *= -1
 
-      // 鼠标交互 - 粒子被鼠标吸引
-      const dx = mouse.x - particle.x
-      const dy = mouse.y - particle.y
+      // 鼠标排斥（比吸引更自然）
+      const dx = particle.x - mouse.x
+      const dy = particle.y - mouse.y
       const dist = Math.sqrt(dx * dx + dy * dy)
 
-      if (dist < MOUSE_RADIUS) {
-        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 0.02
-        particle.vx += (dx / dist) * force
-        particle.vy += (dy / dist) * force
+      if (dist < MOUSE_REPEL_RADIUS && dist > 0) {
+        const force = (MOUSE_REPEL_RADIUS - dist) / MOUSE_REPEL_RADIUS * 0.5
+        particle.vx += (dx / dist) * force * 0.01
+        particle.vy += (dy / dist) * force * 0.01
       }
 
       // 速度衰减
-      particle.vx *= 0.99
-      particle.vy *= 0.99
+      particle.vx *= 0.995
+      particle.vy *= 0.995
 
-      // 脉冲效果
-      const pulse = Math.sin(timeRef.current * particle.pulseSpeed + particle.pulseOffset) * 0.3 + 0.7
-      const currentOpacity = particle.opacity * pulse
+      // 绘制粒子 - 带微弱光晕
+      const gradient = ctx.createRadialGradient(
+        particle.x, particle.y, 0,
+        particle.x, particle.y, particle.radius * 3
+      )
+      gradient.addColorStop(0, `rgba(${dotColor}, ${particle.baseOpacity})`)
+      gradient.addColorStop(1, `rgba(${dotColor}, 0)`)
 
-      // 绘制粒子
+      ctx.beginPath()
+      ctx.arc(particle.x, particle.y, particle.radius * 3, 0, Math.PI * 2)
+      ctx.fillStyle = gradient
+      ctx.fill()
+
+      // 核心亮点
       ctx.beginPath()
       ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(${primaryColor}, ${currentOpacity})`
+      ctx.fillStyle = `rgba(${dotColor}, ${particle.baseOpacity * 1.5})`
       ctx.fill()
     })
 
-    // 绘制连线
+    // 绘制连线 - 只连非常近的粒子
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x
@@ -111,33 +111,16 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
         const dist = Math.sqrt(dx * dx + dy * dy)
 
         if (dist < CONNECTION_DISTANCE) {
-          const opacity = (1 - dist / CONNECTION_DISTANCE) * 0.3
+          const opacity = (1 - dist / CONNECTION_DISTANCE) * 0.12
           ctx.beginPath()
           ctx.moveTo(particles[i].x, particles[i].y)
           ctx.lineTo(particles[j].x, particles[j].y)
-          ctx.strokeStyle = `rgba(${baseColor}, ${opacity})`
+          ctx.strokeStyle = `rgba(${lineColor}, ${opacity})`
           ctx.lineWidth = 0.5
           ctx.stroke()
         }
       }
     }
-
-    // 鼠标附近的高亮连线
-    particles.forEach((particle) => {
-      const dx = mouse.x - particle.x
-      const dy = mouse.y - particle.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
-
-      if (dist < MOUSE_RADIUS) {
-        const opacity = (1 - dist / MOUSE_RADIUS) * 0.5
-        ctx.beginPath()
-        ctx.moveTo(particle.x, particle.y)
-        ctx.lineTo(mouse.x, mouse.y)
-        ctx.strokeStyle = `rgba(${primaryColor}, ${opacity})`
-        ctx.lineWidth = 0.8
-        ctx.stroke()
-      }
-    })
 
     animationFrameRef.current = requestAnimationFrame(animate)
   }, [])
@@ -164,7 +147,7 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
     }
 
     const handleMouseLeave = () => {
-      mouseRef.current = { x: -1000, y: -1000 }
+      mouseRef.current = { x: -9999, y: -9999 }
     }
 
     handleResize()
