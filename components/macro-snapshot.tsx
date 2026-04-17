@@ -50,12 +50,11 @@ export function MacroSnapshot() {
       })
   }, [])
 
-  // 合并 API 数据和静态数据
+  // 合并 API 数据和静态数据，每页 4 个指标
   const buildPages = useCallback(() => {
     const d = apiData
-    const page1: any[] = []
+    const ITEMS_PER_PAGE = 4
 
-    // 从 API 构建所有可用指标
     const indicatorMap: Array<{ key: keyof ApiResponse; id: string; name: string; unit: string; category: string }> = [
       { key: 'gdp', id: 'gdp', name: 'GDP 增速', unit: '%', category: 'growth' },
       { key: 'pmi', id: 'pmi', name: '制造业 PMI', unit: '', category: 'growth' },
@@ -69,9 +68,12 @@ export function MacroSnapshot() {
       { key: 'lpr', id: 'lpr', name: 'LPR (1年)', unit: '%', category: 'finance' },
     ]
 
+    const allItems: any[] = []
+
+    // 先收集所有 API 可用指标
     for (const item of indicatorMap) {
       if (d?.[item.key]) {
-        page1.push({
+        allItems.push({
           id: item.id,
           name: item.name,
           latestValue: d[item.key]!.latestValue,
@@ -85,29 +87,24 @@ export function MacroSnapshot() {
       }
     }
 
-    // 如果 API 数据不足 4 个，用静态数据兜底
-    const fallbackIds = ['gdp', 'pmi', 'cpi', 'm2']
-    if (page1.length < 4) {
-      const fallback = macroIndicators.filter((item) =>
-        fallbackIds.includes(item.id) && !page1.find((p) => p.id === item.id)
-      )
-      page1.push(...fallback)
+    // API 不足时用静态数据补齐
+    if (allItems.length < 4) {
+      const fallbackIds = ['gdp', 'pmi', 'cpi', 'm2']
+      for (const sid of fallbackIds) {
+        if (!allItems.find((i) => i.id === sid)) {
+          const staticItem = macroIndicators.find((m) => m.id === sid)
+          if (staticItem) allItems.push(staticItem)
+        }
+      }
     }
 
-    // 其他页仍然用静态数据兜底
-    const otherIds = page1.map((p) => p.id)
-    const page2 = macroIndicators.filter((item) =>
-      ['exports', 'imports', 'ppi', 'social_financing'].includes(item.id) && !otherIds.includes(item.id)
-    )
-    const page3 = macroIndicators.filter((item) =>
-      ['urban_unemployment', 'property_sales', 'fixed_asset', 'lpr'].includes(item.id) && !otherIds.includes(item.id)
-    )
+    // 按每页 4 个切分
+    const pages: any[][] = []
+    for (let i = 0; i < allItems.length; i += ITEMS_PER_PAGE) {
+      pages.push(allItems.slice(i, i + ITEMS_PER_PAGE))
+    }
 
-    const allPages = [page1]
-    if (page2.length > 0) allPages.push(page2)
-    if (page3.length > 0) allPages.push(page3)
-
-    return allPages
+    return pages
   }, [apiData])
 
   const pages = buildPages()
