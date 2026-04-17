@@ -274,3 +274,36 @@ export function getImportanceStyle(importance: EconomicEvent['importance']): str
   }
   return styles[importance]
 }
+
+// 生成动态摘要：显示最近 7 天内最重要的 2-3 项数据
+export function getCalendarSummary(): string {
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  const weekLater = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const weekLaterStr = weekLater.toISOString().split('T')[0]
+
+  // 筛选未来 7 天内的事件，优先选 high importance
+  const upcoming = economicCalendar
+    .filter((e) => e.date >= todayStr && e.date <= weekLaterStr)
+    .sort((a, b) => {
+      // 先按重要程度排序（high 在前），再按日期排序
+      const importanceOrder = { high: 0, medium: 1, low: 2 }
+      if (importanceOrder[a.importance] !== importanceOrder[b.importance]) {
+        return importanceOrder[a.importance] - importanceOrder[b.importance]
+      }
+      return a.date.localeCompare(b.date) || a.time.localeCompare(b.time)
+    })
+
+  // 取前 3 项
+  const top = upcoming.slice(0, 3)
+  if (top.length === 0) return '暂无近期数据'
+
+  return top
+    .map((e) => {
+      // 如果有 actual 值就显示 actual，否则显示 indicator 名
+      if (e.actual) return `${e.indicator} ${e.actual}`
+      if (e.forecast) return `${e.indicator} ${e.forecast}`
+      return e.indicator
+    })
+    .join(' · ')
+}

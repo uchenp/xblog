@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
-import { Clock } from "lucide-react"
+import { Clock, Eye } from "lucide-react"
 import type { Post } from "@/lib/posts"
 
 interface PostCardProps {
@@ -23,6 +23,12 @@ export function PostCard({ post }: PostCardProps) {
             <Clock className="h-3 w-3" />
             {readingTime} 分钟
           </span>
+          {post.views !== undefined && (
+            <span className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              {post.views}
+            </span>
+          )}
         </div>
         <Link href={`/posts/${post.slug}`} className="block">
           <h2 className="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">

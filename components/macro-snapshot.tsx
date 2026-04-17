@@ -17,14 +17,17 @@ export function MacroSnapshot() {
   const [currentPage, setCurrentPage] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const resetAutoPlay = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      handleNext()
-    }, AUTO_PLAY_INTERVAL)
-  }, [])
+    if (!isPaused) {
+      timerRef.current = setInterval(() => {
+        handleNext()
+      }, AUTO_PLAY_INTERVAL)
+    }
+  }, [isPaused])
 
   const handleNext = useCallback(() => {
     if (isTransitioning) return
@@ -61,11 +64,13 @@ export function MacroSnapshot() {
   }, [isTransitioning, currentPage, resetAutoPlay])
 
   useEffect(() => {
-    resetAutoPlay()
+    if (!isPaused) {
+      resetAutoPlay()
+    }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [resetAutoPlay])
+  }, [isPaused, resetAutoPlay])
 
   const indicators = pages[currentPage]
 
@@ -82,7 +87,11 @@ export function MacroSnapshot() {
   }
 
   return (
-    <div className="mt-6">
+    <div
+      className="mt-6"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="relative" style={{ minHeight: '120px' }}>
         {/* 进入动画层 */}
         {exitDir && (

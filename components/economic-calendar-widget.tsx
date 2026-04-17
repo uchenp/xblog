@@ -8,6 +8,7 @@ import {
   getCountryStyle,
   getImportanceLabel,
   getImportanceStyle,
+  getCalendarSummary,
   type EconomicEvent,
 } from '@/lib/economic-calendar'
 
@@ -120,7 +121,7 @@ export function EconomicCalendarWidget() {
     return groups
   }, [filteredEvents])
 
-  const summary = `${filteredEvents.length} 项数据发布`
+  const summary = getCalendarSummary()
 
   return (
     <CollapsibleSection title="宏观日历" summary={summary}>
