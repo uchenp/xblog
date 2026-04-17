@@ -296,8 +296,12 @@ function drawGradient(
   mouse: { x: number; y: number },
   time: number
 ) {
-  // 底色：极浅的暖白
-  ctx.fillStyle = '#fafbfc'
+  // 底色：浅蓝色天空
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, height)
+  skyGradient.addColorStop(0, '#87CEEB')
+  skyGradient.addColorStop(0.6, '#B0E0F6')
+  skyGradient.addColorStop(1, '#D6EEF8')
+  ctx.fillStyle = skyGradient
   ctx.fillRect(0, 0, width, height)
 
   // 飘动的云朵
@@ -375,7 +379,7 @@ function drawClouds(
     ctx.translate(x, y)
     ctx.scale(scale, scale)
 
-    ctx.fillStyle = `rgba(180, 200, 230, ${opacity})`
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity + 0.15})`
     
     ctx.beginPath()
     ctx.arc(0, 0, 50, 0, Math.PI * 2)
