@@ -362,7 +362,7 @@ function drawClouds(
     const speed = 0.00008 + i * 0.00002
     const wobble = Math.sin(time * speed + i * 2) * 40
     const scale = 0.6 + (i % 3) * 0.25
-    const opacity = 0.025 + (i % 2) * 0.015
+    const opacity = 0.08 + (i % 2) * 0.06
 
     const x = baseX + wobble
     const y = baseY + Math.cos(time * speed * 0.7 + i) * 15
@@ -415,8 +415,8 @@ function drawLightParticles(
     const seed = i * 137.508
     const x = ((seed * 0.7 + time * 0.00003 * (0.5 + (i % 3) * 0.3)) % width)
     const y = ((seed * 0.3 + Math.sin(time * 0.0001 + i) * 30) % height)
-    const radius = 1 + (i % 3) * 0.8
-    const opacity = 0.08 + Math.sin(time * 0.002 + i * 0.5) * 0.04
+    const radius = 1.5 + (i % 3) * 1.2
+    const opacity = 0.15 + Math.sin(time * 0.002 + i * 0.5) * 0.08
 
     ctx.fillStyle = `rgba(180, 190, 210, ${opacity})`
     ctx.beginPath()
