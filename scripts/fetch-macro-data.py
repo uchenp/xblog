@@ -238,9 +238,12 @@ def get_fixed_asset_investment():
 
 def get_lpr():
     df = ak.macro_china_lpr()
-    latest = df.iloc[0]
-    val = sf(latest["RATE_1"], decimals=2)
-    prev_val = sf(df.iloc[1]["RATE_1"], decimals=2)
+    # 按日期排序，取最新两条
+    df = df.sort_values("TRADE_DATE", ascending=False).reset_index(drop=True)
+    latest, prev = df.iloc[0], df.iloc[1]
+    # LPR1Y 是 1 年期，LPR5Y 是 5 年期；优先用 LPR1Y，回退到 RATE_1
+    val = sf(latest.get("LPR1Y")) if sf(latest.get("LPR1Y")) is not None else sf(latest["RATE_1"])
+    prev_val = sf(prev.get("LPR1Y")) if sf(prev.get("LPR1Y")) is not None else sf(prev["RATE_1"])
     if val is None:
         return None
     return {
@@ -252,8 +255,8 @@ def get_lpr():
         "period": str(latest["TRADE_DATE"])[:7],
         "publishDate": "2026-04-20",
         "yoy": None,
-        "mom": None,
-        "trend": "stable",
+        "mom": round(val - prev_val, 1) if prev_val is not None else None,
+        "trend": "up" if (prev_val is not None and val > prev_val) else ("down" if (prev_val is not None and val < prev_val) else "stable"),
         "category": "finance",
     }
 
