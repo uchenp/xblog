@@ -296,11 +296,11 @@ function drawGradient(
   mouse: { x: number; y: number },
   time: number
 ) {
-  // 底色：晴朗天空蓝
+  // 底色：浅蓝天空
   const skyGradient = ctx.createLinearGradient(0, 0, 0, height)
-  skyGradient.addColorStop(0, '#4A90D9')
-  skyGradient.addColorStop(0.5, '#6BB3F0')
-  skyGradient.addColorStop(1, '#A8D8FF')
+  skyGradient.addColorStop(0, '#7EB8E8')
+  skyGradient.addColorStop(0.5, '#A3D4F5')
+  skyGradient.addColorStop(1, '#CDE8F9')
   ctx.fillStyle = skyGradient
   ctx.fillRect(0, 0, width, height)
 
