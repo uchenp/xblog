@@ -1,9 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowUpRight, ArrowDownRight, Minus, BarChart3 } from 'lucide-react'
 import { CollapsibleSection } from '@/components/collapsible-section'
 import { macroIndicators, getCategoryLabel, getCategoryColor, type MacroIndicator } from '@/lib/macro-data'
+
+interface ApiIndicator {
+  latestValue: number
+  previousValue: number
+  period: string
+  publishDate: string
+  yoy: number
+  trend: 'up' | 'down' | 'stable'
+}
+
+interface ApiResponse {
+  gdp?: ApiIndicator
+  pmi?: ApiIndicator
+  cpi?: ApiIndicator
+  m2?: ApiIndicator
+  ppi?: ApiIndicator
+  exports?: ApiIndicator
+  imports?: ApiIndicator
+  social_financing?: ApiIndicator
+  fixed_asset?: ApiIndicator
+  lpr?: ApiIndicator
+}
+
+const indicatorConfig: Array<{
+  key: keyof ApiResponse
+  id: string
+  name: string
+  nameEn: string
+  unit: string
+  category: MacroIndicator['category']
+}> = [
+  { key: 'gdp', id: 'gdp', name: 'GDP 增速', nameEn: 'GDP Growth', unit: '%', category: 'growth' },
+  { key: 'pmi', id: 'pmi', name: '制造业 PMI', nameEn: 'Manufacturing PMI', unit: '', category: 'growth' },
+  { key: 'cpi', id: 'cpi', name: 'CPI', nameEn: 'Consumer Price Index', unit: '%', category: 'inflation' },
+  { key: 'ppi', id: 'ppi', name: 'PPI', nameEn: 'Producer Price Index', unit: '%', category: 'inflation' },
+  { key: 'm2', id: 'm2', name: 'M2 增速', nameEn: 'M2 Growth', unit: '%', category: 'finance' },
+  { key: 'exports', id: 'exports', name: '出口增速', nameEn: 'Export Growth', unit: '%', category: 'trade' },
+  { key: 'imports', id: 'imports', name: '进口增速', nameEn: 'Import Growth', unit: '%', category: 'trade' },
+  { key: 'social_financing', id: 'social_financing', name: '社融增量', nameEn: 'Total Social Financing', unit: '万亿', category: 'finance' },
+  { key: 'fixed_asset', id: 'fixed_asset', name: '固定资产投资', nameEn: 'Fixed Asset Investment', unit: '%', category: 'growth' },
+  { key: 'lpr', id: 'lpr', name: 'LPR (1年)', nameEn: 'Loan Prime Rate (1Y)', unit: '%', category: 'finance' },
+]
 
 const categories = [
   { key: 'all', label: '全部' },
@@ -80,12 +122,67 @@ function IndicatorCard({ indicator }: { indicator: MacroIndicator }) {
 
 export function MacroDataCards() {
   const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [apiData, setApiData] = useState<ApiResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/macro-data')
+      .then((res) => res.json())
+      .then((data: ApiResponse) => {
+        setApiData(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  // 合并 API 数据和静态数据
+  const mergedIndicators: MacroIndicator[] = indicatorConfig.map((config) => {
+    const apiItem = apiData?.[config.key]
+    const staticItem = macroIndicators.find((i) => i.id === config.id)
+
+    if (apiItem) {
+      return {
+        id: config.id,
+        name: config.name,
+        nameEn: config.nameEn,
+        latestValue: apiItem.latestValue,
+        previousValue: apiItem.previousValue,
+        unit: config.unit,
+        period: apiItem.period,
+        publishDate: apiItem.publishDate,
+        yoy: apiItem.yoy,
+        mom: null,
+        trend: apiItem.trend,
+        category: config.category,
+      }
+    }
+
+    return staticItem!
+  }).filter(Boolean)
 
   const filteredIndicators = activeCategory === 'all'
-    ? macroIndicators
-    : macroIndicators.filter((i) => i.category === activeCategory)
+    ? mergedIndicators
+    : mergedIndicators.filter((i) => i.category === activeCategory)
 
-  const summary = `${macroIndicators.length} 项指标 · ${macroIndicators[0]?.period}`
+  const summary = `${mergedIndicators.length} 项指标 · ${mergedIndicators[0]?.period}`
+
+  if (loading) {
+    return (
+      <CollapsibleSection title="经济指标" summary="加载中...">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-xl border border-border bg-card p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-24 mb-3" />
+              <div className="h-8 bg-muted rounded w-32 mb-2" />
+              <div className="h-3 bg-muted rounded w-20" />
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
+    )
+  }
 
   return (
     <CollapsibleSection title="经济指标" summary={summary}>

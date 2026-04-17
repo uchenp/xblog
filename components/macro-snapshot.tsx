@@ -18,6 +18,12 @@ interface ApiResponse {
   pmi?: ApiIndicator
   cpi?: ApiIndicator
   m2?: ApiIndicator
+  ppi?: ApiIndicator
+  exports?: ApiIndicator
+  imports?: ApiIndicator
+  social_financing?: ApiIndicator
+  fixed_asset?: ApiIndicator
+  lpr?: ApiIndicator
 }
 
 const AUTO_PLAY_INTERVAL = 5000
@@ -49,82 +55,55 @@ export function MacroSnapshot() {
     const d = apiData
     const page1: any[] = []
 
-    // GDP
-    if (d?.gdp) {
-      page1.push({
-        id: 'gdp',
-        name: 'GDP 增速',
-        latestValue: d.gdp.latestValue,
-        previousValue: d.gdp.previousValue,
-        unit: '%',
-        period: d.gdp.period,
-        yoy: d.gdp.yoy,
-        trend: d.gdp.trend,
-        category: 'growth' as const,
-      })
+    // 从 API 构建所有可用指标
+    const indicatorMap: Array<{ key: keyof ApiResponse; id: string; name: string; unit: string; category: string }> = [
+      { key: 'gdp', id: 'gdp', name: 'GDP 增速', unit: '%', category: 'growth' },
+      { key: 'pmi', id: 'pmi', name: '制造业 PMI', unit: '', category: 'growth' },
+      { key: 'cpi', id: 'cpi', name: 'CPI', unit: '%', category: 'inflation' },
+      { key: 'ppi', id: 'ppi', name: 'PPI', unit: '%', category: 'inflation' },
+      { key: 'm2', id: 'm2', name: 'M2 增速', unit: '%', category: 'finance' },
+      { key: 'exports', id: 'exports', name: '出口增速', unit: '%', category: 'trade' },
+      { key: 'imports', id: 'imports', name: '进口增速', unit: '%', category: 'trade' },
+      { key: 'social_financing', id: 'social_financing', name: '社融增量', unit: '万亿', category: 'finance' },
+      { key: 'fixed_asset', id: 'fixed_asset', name: '固定资产投资', unit: '%', category: 'growth' },
+      { key: 'lpr', id: 'lpr', name: 'LPR (1年)', unit: '%', category: 'finance' },
+    ]
+
+    for (const item of indicatorMap) {
+      if (d?.[item.key]) {
+        page1.push({
+          id: item.id,
+          name: item.name,
+          latestValue: d[item.key]!.latestValue,
+          previousValue: d[item.key]!.previousValue,
+          unit: item.unit,
+          period: d[item.key]!.period,
+          yoy: d[item.key]!.yoy,
+          trend: d[item.key]!.trend,
+          category: item.category as any,
+        })
+      }
     }
 
-    // PMI
-    if (d?.pmi) {
-      page1.push({
-        id: 'pmi',
-        name: '制造业 PMI',
-        latestValue: d.pmi.latestValue,
-        previousValue: d.pmi.previousValue,
-        unit: '',
-        period: d.pmi.period,
-        yoy: d.pmi.yoy,
-        trend: d.pmi.trend,
-        category: 'growth' as const,
-      })
+    // 如果 API 数据不足 4 个，用静态数据兜底
+    const fallbackIds = ['gdp', 'pmi', 'cpi', 'm2']
+    if (page1.length < 4) {
+      const fallback = macroIndicators.filter((item) =>
+        fallbackIds.includes(item.id) && !page1.find((p) => p.id === item.id)
+      )
+      page1.push(...fallback)
     }
 
-    // CPI
-    if (d?.cpi) {
-      page1.push({
-        id: 'cpi',
-        name: 'CPI',
-        latestValue: d.cpi.latestValue,
-        previousValue: d.cpi.previousValue,
-        unit: '%',
-        period: d.cpi.period,
-        yoy: d.cpi.yoy,
-        trend: d.cpi.trend,
-        category: 'inflation' as const,
-      })
-    }
-
-    // M2
-    if (d?.m2) {
-      page1.push({
-        id: 'm2',
-        name: 'M2 增速',
-        latestValue: d.m2.latestValue,
-        previousValue: d.m2.previousValue,
-        unit: '%',
-        period: d.m2.period,
-        yoy: d.m2.yoy,
-        trend: d.m2.trend,
-        category: 'finance' as const,
-      })
-    }
-
-    // 如果 API 数据不足，用静态数据兜底
-    const fallback = macroIndicators.filter((item) =>
-      ['gdp', 'pmi', 'cpi', 'm2'].includes(item.id)
-    )
-
-    const final = page1.length > 0 ? page1 : fallback
-
-    // 其他页仍然用静态数据
+    // 其他页仍然用静态数据兜底
+    const otherIds = page1.map((p) => p.id)
     const page2 = macroIndicators.filter((item) =>
-      ['exports', 'imports', 'ppi', 'social_financing'].includes(item.id)
+      ['exports', 'imports', 'ppi', 'social_financing'].includes(item.id) && !otherIds.includes(item.id)
     )
     const page3 = macroIndicators.filter((item) =>
-      ['urban_unemployment', 'property_sales'].includes(item.id)
+      ['urban_unemployment', 'property_sales', 'fixed_asset', 'lpr'].includes(item.id) && !otherIds.includes(item.id)
     )
 
-    const allPages = [final]
+    const allPages = [page1]
     if (page2.length > 0) allPages.push(page2)
     if (page3.length > 0) allPages.push(page3)
 
