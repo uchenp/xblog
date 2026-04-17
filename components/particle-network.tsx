@@ -296,18 +296,18 @@ function drawGradient(
   mouse: { x: number; y: number },
   time: number
 ) {
-  // 底色：浅蓝色天空
+  // 底色：晴朗天空蓝
   const skyGradient = ctx.createLinearGradient(0, 0, 0, height)
-  skyGradient.addColorStop(0, '#87CEEB')
-  skyGradient.addColorStop(0.6, '#B0E0F6')
-  skyGradient.addColorStop(1, '#D6EEF8')
+  skyGradient.addColorStop(0, '#4A90D9')
+  skyGradient.addColorStop(0.5, '#6BB3F0')
+  skyGradient.addColorStop(1, '#A8D8FF')
   ctx.fillStyle = skyGradient
   ctx.fillRect(0, 0, width, height)
 
   // 飘动的云朵
   drawClouds(ctx, width, height, time)
 
-  // 柔和光斑
+  // 柔和光斑（和天空蓝协调）
   const gradient1 = ctx.createRadialGradient(
     width * 0.25 + Math.sin(time * 0.0003) * 80,
     height * 0.35 + Math.cos(time * 0.0002) * 40,
@@ -316,8 +316,8 @@ function drawGradient(
     height * 0.35,
     Math.max(width, height) * 0.45
   )
-  gradient1.addColorStop(0, 'rgba(99, 102, 241, 0.04)')
-  gradient1.addColorStop(0.5, 'rgba(139, 92, 246, 0.02)')
+  gradient1.addColorStop(0, 'rgba(255, 255, 255, 0.12)')
+  gradient1.addColorStop(0.5, 'rgba(255, 255, 255, 0.05)')
   gradient1.addColorStop(1, 'rgba(255, 255, 255, 0)')
   ctx.fillStyle = gradient1
   ctx.fillRect(0, 0, width, height)
@@ -330,8 +330,8 @@ function drawGradient(
     height * 0.65,
     Math.max(width, height) * 0.4
   )
-  gradient2.addColorStop(0, 'rgba(236, 72, 153, 0.03)')
-  gradient2.addColorStop(0.5, 'rgba(244, 114, 182, 0.015)')
+  gradient2.addColorStop(0, 'rgba(255, 255, 255, 0.08)')
+  gradient2.addColorStop(0.5, 'rgba(255, 255, 255, 0.03)')
   gradient2.addColorStop(1, 'rgba(255, 255, 255, 0)')
   ctx.fillStyle = gradient2
   ctx.fillRect(0, 0, width, height)
@@ -342,8 +342,8 @@ function drawGradient(
   // 鼠标光晕
   if (mouse.x > 0 && mouse.y > 0) {
     const mouseGradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150)
-    mouseGradient.addColorStop(0, 'rgba(99, 102, 241, 0.06)')
-    mouseGradient.addColorStop(1, 'rgba(99, 102, 241, 0)')
+    mouseGradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)')
+    mouseGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
     ctx.fillStyle = mouseGradient
     ctx.beginPath()
     ctx.arc(mouse.x, mouse.y, 150, 0, Math.PI * 2)
