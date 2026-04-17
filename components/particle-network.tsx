@@ -288,7 +288,7 @@ function drawStars(
   }
 }
 
-// 亮色模式：渐变光晕
+// 亮色模式：飘动的云 + 柔和光斑
 function drawGradient(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -296,54 +296,131 @@ function drawGradient(
   mouse: { x: number; y: number },
   time: number
 ) {
+  // 底色：极浅的暖白
+  ctx.fillStyle = '#fafbfc'
+  ctx.fillRect(0, 0, width, height)
+
+  // 飘动的云朵
+  drawClouds(ctx, width, height, time)
+
+  // 柔和光斑
   const gradient1 = ctx.createRadialGradient(
-    width * 0.2 + Math.sin(time * 0.0003) * 80,
-    height * 0.3 + Math.cos(time * 0.0002) * 40,
+    width * 0.25 + Math.sin(time * 0.0003) * 80,
+    height * 0.35 + Math.cos(time * 0.0002) * 40,
     0,
-    width * 0.2,
-    height * 0.3,
-    Math.max(width, height) * 0.5
+    width * 0.25,
+    height * 0.35,
+    Math.max(width, height) * 0.45
   )
-  gradient1.addColorStop(0, 'rgba(99, 102, 241, 0.06)')
-  gradient1.addColorStop(0.5, 'rgba(139, 92, 246, 0.03)')
+  gradient1.addColorStop(0, 'rgba(99, 102, 241, 0.04)')
+  gradient1.addColorStop(0.5, 'rgba(139, 92, 246, 0.02)')
   gradient1.addColorStop(1, 'rgba(255, 255, 255, 0)')
   ctx.fillStyle = gradient1
   ctx.fillRect(0, 0, width, height)
 
   const gradient2 = ctx.createRadialGradient(
-    width * 0.8 + Math.cos(time * 0.00025) * 60,
-    height * 0.7 + Math.sin(time * 0.00035) * 50,
+    width * 0.75 + Math.cos(time * 0.00025) * 60,
+    height * 0.65 + Math.sin(time * 0.00035) * 50,
     0,
-    width * 0.8,
-    height * 0.7,
-    Math.max(width, height) * 0.45
+    width * 0.75,
+    height * 0.65,
+    Math.max(width, height) * 0.4
   )
-  gradient2.addColorStop(0, 'rgba(236, 72, 153, 0.04)')
-  gradient2.addColorStop(0.5, 'rgba(244, 114, 182, 0.02)')
+  gradient2.addColorStop(0, 'rgba(236, 72, 153, 0.03)')
+  gradient2.addColorStop(0.5, 'rgba(244, 114, 182, 0.015)')
   gradient2.addColorStop(1, 'rgba(255, 255, 255, 0)')
   ctx.fillStyle = gradient2
   ctx.fillRect(0, 0, width, height)
 
-  const centerX = width * 0.5
-  const centerY = height * 0.5
-  for (let i = 0; i < 3; i++) {
-    const phase = (time * 0.0005 + i * 0.33) % 1
-    const radius = phase * Math.max(width, height) * 0.6
-    const opacity = (1 - phase) * 0.04
-    ctx.beginPath()
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(99, 102, 241, ${opacity})`
-    ctx.lineWidth = 2
-    ctx.stroke()
-  }
+  // 微小的漂浮粒子（类似尘埃在阳光中的效果）
+  drawLightParticles(ctx, width, height, time)
 
+  // 鼠标光晕
   if (mouse.x > 0 && mouse.y > 0) {
     const mouseGradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150)
-    mouseGradient.addColorStop(0, 'rgba(99, 102, 241, 0.08)')
+    mouseGradient.addColorStop(0, 'rgba(99, 102, 241, 0.06)')
     mouseGradient.addColorStop(1, 'rgba(99, 102, 241, 0)')
     ctx.fillStyle = mouseGradient
     ctx.beginPath()
     ctx.arc(mouse.x, mouse.y, 150, 0, Math.PI * 2)
+    ctx.fill()
+  }
+}
+
+// 飘动的云朵
+function drawClouds(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number
+) {
+  const cloudCount = 5
+  for (let i = 0; i < cloudCount; i++) {
+    // 每朵云的基础参数由索引决定，保证稳定
+    const baseX = ((i * 0.23 + 0.1) * width)
+    const baseY = ((0.15 + (i % 3) * 0.2) * height)
+    const speed = 0.00008 + i * 0.00002
+    const wobble = Math.sin(time * speed + i * 2) * 40
+    const scale = 0.6 + (i % 3) * 0.25
+    const opacity = 0.025 + (i % 2) * 0.015
+
+    const x = baseX + wobble
+    const y = baseY + Math.cos(time * speed * 0.7 + i) * 15
+
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.scale(scale, scale)
+
+    // 云朵由多个圆叠加而成
+    ctx.fillStyle = `rgba(200, 210, 230, ${opacity})`
+    
+    // 主圆
+    ctx.beginPath()
+    ctx.arc(0, 0, 50, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 左圆
+    ctx.beginPath()
+    ctx.arc(-35, 8, 35, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 右圆
+    ctx.beginPath()
+    ctx.arc(30, 5, 40, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 上圆
+    ctx.beginPath()
+    ctx.arc(-10, -20, 30, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 右上圆
+    ctx.beginPath()
+    ctx.arc(15, -15, 25, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.restore()
+  }
+}
+
+// 阳光中的漂浮粒子
+function drawLightParticles(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number
+) {
+  const count = 30
+  for (let i = 0; i < count; i++) {
+    const seed = i * 137.508
+    const x = ((seed * 0.7 + time * 0.00003 * (0.5 + (i % 3) * 0.3)) % width)
+    const y = ((seed * 0.3 + Math.sin(time * 0.0001 + i) * 30) % height)
+    const radius = 1 + (i % 3) * 0.8
+    const opacity = 0.08 + Math.sin(time * 0.002 + i * 0.5) * 0.04
+
+    ctx.fillStyle = `rgba(180, 190, 210, ${opacity})`
+    ctx.beginPath()
+    ctx.arc(x, y, radius, 0, Math.PI * 2)
     ctx.fill()
   }
 }
