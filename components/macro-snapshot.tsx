@@ -4,21 +4,134 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { macroIndicators, getCategoryColor } from '@/lib/macro-data'
 
-// 所有指标分组，每页 4 个
-const pages = [
-  macroIndicators.filter((item) => ['gdp', 'pmi', 'cpi', 'm2'].includes(item.id)),
-  macroIndicators.filter((item) => ['exports', 'imports', 'ppi', 'social_financing'].includes(item.id)),
-  macroIndicators.filter((item) => ['urban_unemployment', 'property_sales'].includes(item.id)),
-]
+interface ApiIndicator {
+  latestValue: number
+  previousValue: number
+  period: string
+  publishDate: string
+  yoy: number
+  trend: 'up' | 'down' | 'stable'
+}
+
+interface ApiResponse {
+  gdp?: ApiIndicator
+  pmi?: ApiIndicator
+  cpi?: ApiIndicator
+  m2?: ApiIndicator
+}
 
 const AUTO_PLAY_INTERVAL = 5000
 
 export function MacroSnapshot() {
+  const [apiData, setApiData] = useState<ApiResponse | null>(null)
+  const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // 从 API 获取核心指标
+  useEffect(() => {
+    fetch('/api/macro-data')
+      .then((res) => res.json())
+      .then((data: ApiResponse) => {
+        setApiData(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  // 合并 API 数据和静态数据
+  const buildPages = useCallback(() => {
+    const d = apiData
+    const page1: any[] = []
+
+    // GDP
+    if (d?.gdp) {
+      page1.push({
+        id: 'gdp',
+        name: 'GDP 增速',
+        latestValue: d.gdp.latestValue,
+        previousValue: d.gdp.previousValue,
+        unit: '%',
+        period: d.gdp.period,
+        yoy: d.gdp.yoy,
+        trend: d.gdp.trend,
+        category: 'growth' as const,
+      })
+    }
+
+    // PMI
+    if (d?.pmi) {
+      page1.push({
+        id: 'pmi',
+        name: '制造业 PMI',
+        latestValue: d.pmi.latestValue,
+        previousValue: d.pmi.previousValue,
+        unit: '',
+        period: d.pmi.period,
+        yoy: d.pmi.yoy,
+        trend: d.pmi.trend,
+        category: 'growth' as const,
+      })
+    }
+
+    // CPI
+    if (d?.cpi) {
+      page1.push({
+        id: 'cpi',
+        name: 'CPI',
+        latestValue: d.cpi.latestValue,
+        previousValue: d.cpi.previousValue,
+        unit: '%',
+        period: d.cpi.period,
+        yoy: d.cpi.yoy,
+        trend: d.cpi.trend,
+        category: 'inflation' as const,
+      })
+    }
+
+    // M2
+    if (d?.m2) {
+      page1.push({
+        id: 'm2',
+        name: 'M2 增速',
+        latestValue: d.m2.latestValue,
+        previousValue: d.m2.previousValue,
+        unit: '%',
+        period: d.m2.period,
+        yoy: d.m2.yoy,
+        trend: d.m2.trend,
+        category: 'finance' as const,
+      })
+    }
+
+    // 如果 API 数据不足，用静态数据兜底
+    const fallback = macroIndicators.filter((item) =>
+      ['gdp', 'pmi', 'cpi', 'm2'].includes(item.id)
+    )
+
+    const final = page1.length > 0 ? page1 : fallback
+
+    // 其他页仍然用静态数据
+    const page2 = macroIndicators.filter((item) =>
+      ['exports', 'imports', 'ppi', 'social_financing'].includes(item.id)
+    )
+    const page3 = macroIndicators.filter((item) =>
+      ['urban_unemployment', 'property_sales'].includes(item.id)
+    )
+
+    const allPages = [final]
+    if (page2.length > 0) allPages.push(page2)
+    if (page3.length > 0) allPages.push(page3)
+
+    return allPages
+  }, [apiData])
+
+  const pages = buildPages()
 
   const resetAutoPlay = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
@@ -38,7 +151,7 @@ export function MacroSnapshot() {
       setExitDir(null)
       setIsTransitioning(false)
     }, 350)
-  }, [isTransitioning])
+  }, [isTransitioning, pages.length])
 
   const handlePrev = useCallback(() => {
     if (isTransitioning) return
@@ -49,7 +162,7 @@ export function MacroSnapshot() {
       setExitDir(null)
       setIsTransitioning(false)
     }, 350)
-  }, [isTransitioning])
+  }, [isTransitioning, pages.length])
 
   const handleGoTo = useCallback((page: number) => {
     if (isTransitioning || page === currentPage) return
@@ -61,7 +174,7 @@ export function MacroSnapshot() {
       setIsTransitioning(false)
     }, 350)
     resetAutoPlay()
-  }, [isTransitioning, currentPage, resetAutoPlay])
+  }, [isTransitioning, currentPage, pages.length, resetAutoPlay])
 
   useEffect(() => {
     if (!isPaused) {
@@ -72,7 +185,7 @@ export function MacroSnapshot() {
     }
   }, [isPaused, resetAutoPlay])
 
-  const indicators = pages[currentPage]
+  const indicators = pages[currentPage] || []
 
   const getSlideStyle = () => {
     if (!exitDir) return { opacity: 1, transform: 'translateX(0)' }
@@ -86,6 +199,23 @@ export function MacroSnapshot() {
     return { opacity: 0, transform: 'translateX(-20px)' }
   }
 
+  if (loading) {
+    return (
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-pulse"
+          >
+            <div className="h-3 bg-muted rounded w-16 mb-2" />
+            <div className="h-7 bg-muted rounded w-20 mb-2" />
+            <div className="h-3 bg-muted rounded w-12" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div
       className="mt-6"
@@ -93,7 +223,6 @@ export function MacroSnapshot() {
       onMouseLeave={() => setIsPaused(false)}
     >
       <div className="relative" style={{ minHeight: '120px' }}>
-        {/* 进入动画层 */}
         {exitDir && (
           <div
             className="absolute inset-0 transition-all duration-350 ease-out"
@@ -104,20 +233,19 @@ export function MacroSnapshot() {
                 exitDir === 'left'
                   ? (currentPage + 1) % pages.length
                   : (currentPage - 1 + pages.length) % pages.length
-              ].map((indicator) => (
+              ].map((indicator: any) => (
                 <IndicatorCard key={indicator.id} indicator={indicator} />
               ))}
             </div>
           </div>
         )}
 
-        {/* 当前页 */}
         <div
           className="transition-all duration-350 ease-out"
           style={getSlideStyle()}
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {indicators.map((indicator) => (
+            {indicators.map((indicator: any) => (
               <IndicatorCard key={indicator.id} indicator={indicator} />
             ))}
           </div>
@@ -161,7 +289,7 @@ export function MacroSnapshot() {
   )
 }
 
-function IndicatorCard({ indicator }: { indicator: typeof macroIndicators[0] }) {
+function IndicatorCard({ indicator }: { indicator: any }) {
   return (
     <div className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4">
       <div className="flex items-center justify-between mb-1">
@@ -179,7 +307,7 @@ function IndicatorCard({ indicator }: { indicator: typeof macroIndicators[0] }) 
           {indicator.latestValue}
           {indicator.unit}
         </span>
-        {indicator.yoy !== null && (
+        {indicator.yoy !== null && indicator.yoy !== undefined && (
           <span
             className={`text-xs font-medium ${
               indicator.yoy >= 0 ? 'text-emerald-500' : 'text-red-500'
