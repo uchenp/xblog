@@ -356,45 +356,43 @@ function drawClouds(
 ) {
   const cloudCount = 5
   for (let i = 0; i < cloudCount; i++) {
-    // 每朵云的基础参数由索引决定，保证稳定
-    const baseX = ((i * 0.23 + 0.1) * width)
-    const baseY = ((0.15 + (i % 3) * 0.2) * height)
-    const speed = 0.00008 + i * 0.00002
-    const wobble = Math.sin(time * speed + i * 2) * 40
-    const scale = 0.6 + (i % 3) * 0.25
+    // 每朵云以不同速度从左向右飘动
+    const speed = 0.00004 + i * 0.000015
+    const cycleDuration = width / speed
+    const progress = ((time * speed) % cycleDuration) / cycleDuration
+    
+    // 垂直方向轻微波动
+    const baseY = (0.12 + (i % 3) * 0.2) * height
+    const yWobble = Math.sin(time * 0.0003 + i * 1.5) * 20
+    const scale = 0.5 + (i % 3) * 0.25
     const opacity = 0.08 + (i % 2) * 0.06
 
-    const x = baseX + wobble
-    const y = baseY + Math.cos(time * speed * 0.7 + i) * 15
+    // 从左到右，超出屏幕后回到左边
+    const x = progress * (width + 200) - 100
+    const y = baseY + yWobble
 
     ctx.save()
     ctx.translate(x, y)
     ctx.scale(scale, scale)
 
-    // 云朵由多个圆叠加而成
-    ctx.fillStyle = `rgba(200, 210, 230, ${opacity})`
+    ctx.fillStyle = `rgba(180, 200, 230, ${opacity})`
     
-    // 主圆
     ctx.beginPath()
     ctx.arc(0, 0, 50, 0, Math.PI * 2)
     ctx.fill()
     
-    // 左圆
     ctx.beginPath()
     ctx.arc(-35, 8, 35, 0, Math.PI * 2)
     ctx.fill()
     
-    // 右圆
     ctx.beginPath()
     ctx.arc(30, 5, 40, 0, Math.PI * 2)
     ctx.fill()
     
-    // 上圆
     ctx.beginPath()
     ctx.arc(-10, -20, 30, 0, Math.PI * 2)
     ctx.fill()
     
-    // 右上圆
     ctx.beginPath()
     ctx.arc(15, -15, 25, 0, Math.PI * 2)
     ctx.fill()
