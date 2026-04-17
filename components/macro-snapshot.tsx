@@ -12,61 +12,54 @@ const pages = [
 ]
 
 const AUTO_PLAY_INTERVAL = 5000
-const TRANSITION_DURATION = 400
 
 export function MacroSnapshot() {
   const [currentPage, setCurrentPage] = useState(0)
-  const [animating, setAnimating] = useState(false)
-  const [slideOffset, setSlideOffset] = useState(0)
-  const directionRef = useRef<'next' | 'prev'>('next')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const resetAutoPlay = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
-      directionRef.current = 'next'
-      goToNext()
+      handleNext()
     }, AUTO_PLAY_INTERVAL)
   }, [])
 
-  const goToNext = useCallback(() => {
-    if (animating) return
-    setAnimating(true)
-    directionRef.current = 'next'
-    setSlideOffset(-1)
+  const handleNext = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setExitDir('left')
     setTimeout(() => {
       setCurrentPage((prev) => (prev + 1) % pages.length)
-      setSlideOffset(0)
-      setAnimating(false)
-    }, TRANSITION_DURATION)
-  }, [animating])
+      setExitDir(null)
+      setIsTransitioning(false)
+    }, 350)
+  }, [isTransitioning])
 
-  const goToPrev = useCallback(() => {
-    if (animating) return
-    setAnimating(true)
-    directionRef.current = 'prev'
-    setSlideOffset(1)
+  const handlePrev = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setExitDir('right')
     setTimeout(() => {
       setCurrentPage((prev) => (prev - 1 + pages.length) % pages.length)
-      setSlideOffset(0)
-      setAnimating(false)
-    }, TRANSITION_DURATION)
-  }, [animating])
+      setExitDir(null)
+      setIsTransitioning(false)
+    }, 350)
+  }, [isTransitioning])
 
-  const goToPage = useCallback((page: number) => {
-    if (animating || page === currentPage) return
-    setAnimating(true)
-    directionRef.current = page > currentPage ? 'next' : 'prev'
-    setSlideOffset(page > currentPage ? -1 : 1)
+  const handleGoTo = useCallback((page: number) => {
+    if (isTransitioning || page === currentPage) return
+    setIsTransitioning(true)
+    setExitDir(page > currentPage ? 'left' : 'right')
     setTimeout(() => {
       setCurrentPage(page)
-      setSlideOffset(0)
-      setAnimating(false)
-    }, TRANSITION_DURATION)
+      setExitDir(null)
+      setIsTransitioning(false)
+    }, 350)
     resetAutoPlay()
-  }, [animating, currentPage, resetAutoPlay])
+  }, [isTransitioning, currentPage, resetAutoPlay])
 
-  // 自动轮播
   useEffect(() => {
     resetAutoPlay()
     return () => {
@@ -76,117 +69,48 @@ export function MacroSnapshot() {
 
   const indicators = pages[currentPage]
 
+  const getSlideStyle = () => {
+    if (!exitDir) return { opacity: 1, transform: 'translateX(0)' }
+    if (exitDir === 'left') return { opacity: 0, transform: 'translateX(-20px)' }
+    return { opacity: 0, transform: 'translateX(20px)' }
+  }
+
+  const getEnterStyle = () => {
+    if (!exitDir) return {}
+    if (exitDir === 'left') return { opacity: 0, transform: 'translateX(20px)' }
+    return { opacity: 0, transform: 'translateX(-20px)' }
+  }
+
   return (
     <div className="mt-6">
-      {/* 轮播视口 */}
-      <div className="overflow-hidden">
-        <div
-          className="flex transition-all ease-out"
-          style={{
-            transform: `translateX(${slideOffset * 100}%)`,
-            transitionDuration: `${TRANSITION_DURATION}ms`,
-          }}
-        >
-          {/* 当前页 */}
-          <div className="w-full shrink-0">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              {indicators.map((indicator) => (
-                <div
-                  key={indicator.id}
-                  className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{indicator.name}</span>
-                    {indicator.trend === 'up' ? (
-                      <TrendingUp className="h-3 w-3 text-emerald-500" />
-                    ) : indicator.trend === 'down' ? (
-                      <TrendingDown className="h-3 w-3 text-red-500" />
-                    ) : (
-                      <Minus className="h-3 w-3 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-semibold tracking-tight">
-                      {indicator.latestValue}
-                      {indicator.unit}
-                    </span>
-                    {indicator.yoy !== null && (
-                      <span
-                        className={`text-xs font-medium ${
-                          indicator.yoy >= 0 ? 'text-emerald-500' : 'text-red-500'
-                        }`}
-                      >
-                        {indicator.yoy >= 0 ? '+' : ''}
-                        {indicator.yoy}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <span
-                      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${getCategoryColor(indicator.category)}`}
-                    >
-                      {getCategoryLabel(indicator.category)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {indicator.period}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 下一页（用于滑出动画） */}
-          <div className="w-full shrink-0">
+      <div className="relative" style={{ minHeight: '120px' }}>
+        {/* 进入动画层 */}
+        {exitDir && (
+          <div
+            className="absolute inset-0 transition-all duration-350 ease-out"
+            style={getEnterStyle()}
+          >
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {pages[
-                directionRef.current === 'next'
+                exitDir === 'left'
                   ? (currentPage + 1) % pages.length
                   : (currentPage - 1 + pages.length) % pages.length
               ].map((indicator) => (
-                <div
-                  key={indicator.id}
-                  className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{indicator.name}</span>
-                    {indicator.trend === 'up' ? (
-                      <TrendingUp className="h-3 w-3 text-emerald-500" />
-                    ) : indicator.trend === 'down' ? (
-                      <TrendingDown className="h-3 w-3 text-red-500" />
-                    ) : (
-                      <Minus className="h-3 w-3 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-semibold tracking-tight">
-                      {indicator.latestValue}
-                      {indicator.unit}
-                    </span>
-                    {indicator.yoy !== null && (
-                      <span
-                        className={`text-xs font-medium ${
-                          indicator.yoy >= 0 ? 'text-emerald-500' : 'text-red-500'
-                        }`}
-                      >
-                        {indicator.yoy >= 0 ? '+' : ''}
-                        {indicator.yoy}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <span
-                      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${getCategoryColor(indicator.category)}`}
-                    >
-                      {getCategoryLabel(indicator.category)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {indicator.period}
-                    </span>
-                  </div>
-                </div>
+                <IndicatorCard key={indicator.id} indicator={indicator} />
               ))}
             </div>
+          </div>
+        )}
+
+        {/* 当前页 */}
+        <div
+          className="transition-all duration-350 ease-out"
+          style={getSlideStyle()}
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {indicators.map((indicator) => (
+              <IndicatorCard key={indicator.id} indicator={indicator} />
+            ))}
           </div>
         </div>
       </div>
@@ -194,7 +118,7 @@ export function MacroSnapshot() {
       {/* 轮播控制 */}
       <div className="flex items-center justify-center gap-3 mt-4">
         <button
-          onClick={goToPrev}
+          onClick={handlePrev}
           className="p-1 rounded-full hover:bg-background/80 transition-colors text-muted-foreground hover:text-foreground"
           aria-label="上一页"
         >
@@ -205,7 +129,7 @@ export function MacroSnapshot() {
           {pages.map((_, i) => (
             <button
               key={i}
-              onClick={() => goToPage(i)}
+              onClick={() => handleGoTo(i)}
               className={`h-1.5 rounded-full transition-all ${
                 i === currentPage
                   ? 'w-6 bg-primary'
@@ -217,12 +141,55 @@ export function MacroSnapshot() {
         </div>
 
         <button
-          onClick={goToNext}
+          onClick={handleNext}
           className="p-1 rounded-full hover:bg-background/80 transition-colors text-muted-foreground hover:text-foreground"
           aria-label="下一页"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
+      </div>
+    </div>
+  )
+}
+
+function IndicatorCard({ indicator }: { indicator: typeof macroIndicators[0] }) {
+  return (
+    <div className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs text-muted-foreground">{indicator.name}</span>
+        {indicator.trend === 'up' ? (
+          <TrendingUp className="h-3 w-3 text-emerald-500" />
+        ) : indicator.trend === 'down' ? (
+          <TrendingDown className="h-3 w-3 text-red-500" />
+        ) : (
+          <Minus className="h-3 w-3 text-muted-foreground" />
+        )}
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-xl font-semibold tracking-tight">
+          {indicator.latestValue}
+          {indicator.unit}
+        </span>
+        {indicator.yoy !== null && (
+          <span
+            className={`text-xs font-medium ${
+              indicator.yoy >= 0 ? 'text-emerald-500' : 'text-red-500'
+            }`}
+          >
+            {indicator.yoy >= 0 ? '+' : ''}
+            {indicator.yoy}
+          </span>
+        )}
+      </div>
+      <div className="mt-1 flex items-center gap-1.5">
+        <span
+          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${getCategoryColor(indicator.category)}`}
+        >
+          {getCategoryLabel(indicator.category)}
+        </span>
+        <span className="text-[10px] text-muted-foreground">
+          {indicator.period}
+        </span>
       </div>
     </div>
   )
