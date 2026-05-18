@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
+import { createHash, timingSafeEqual } from 'crypto'
 import { cookies } from 'next/headers'
 
 const AUTH_COOKIE_NAME = 'xblog_admin_auth'
@@ -10,6 +10,13 @@ function getTokenHash(): string {
   return createHash('sha256').update(token).digest('hex').slice(0, 16)
 }
 
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, 'utf8')
+  const bufB = Buffer.from(b, 'utf8')
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
+
 async function verifyCookieAuth(): Promise<boolean> {
   const expectedHash = getTokenHash()
   if (!expectedHash) return false
@@ -17,7 +24,8 @@ async function verifyCookieAuth(): Promise<boolean> {
   try {
     const cookieStore = await cookies()
     const authCookie = cookieStore.get(AUTH_COOKIE_NAME)
-    return !!(authCookie && authCookie.value === expectedHash)
+    if (!authCookie) return false
+    return safeEqual(authCookie.value, expectedHash)
   } catch {
     return false
   }
@@ -37,7 +45,7 @@ export async function requireAuth(request: Request): Promise<NextResponse | null
   const authHeader = request.headers.get('authorization')
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7)
-    if (token === adminToken) {
+    if (safeEqual(token, adminToken)) {
       return null
     }
   }

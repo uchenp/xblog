@@ -21,6 +21,6 @@ screenshots/
 # TypeScript build info
 *.tsbuildinfo
 
-# Scripts and misc (not source code)
-scripts/
+# Local-only scripts (个人临时脚本不入库；正式脚本应直接 git add)
+scripts/*.local.*
 update_post_page.py

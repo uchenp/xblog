@@ -7,7 +7,6 @@ import { zhCN } from "date-fns/locale"
 import { BlogHeader } from "@/components/blog/header"
 import { BlogFooter } from "@/components/blog/footer"
 import { PostContent } from "@/components/blog/post-content"
-import { ViewCount } from "@/components/view-count"
 import { RelatedPosts } from "@/components/related-posts"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { ReadingProgress } from "@/components/reading-progress"
@@ -131,7 +130,6 @@ export default async function PostPage({ params }: PostPageProps) {
                     <Clock className="h-4 w-4" />
                     {readingTime} 分钟阅读
                   </span>
-                  <ViewCount slug={post.slug} />
                   {post.categories?.length > 0 && (
                     <div className="flex items-center gap-2">
                       <span>📁</span>

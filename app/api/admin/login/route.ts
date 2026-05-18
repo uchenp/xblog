@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createHash } from 'crypto'
+import { createHash, timingSafeEqual } from 'crypto'
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN
 
-// 简单内存限流：记录每个 IP 的失败次数
+// 常量时间字符串比较，避免时序攻击
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, 'utf8')
+  const bufB = Buffer.from(b, 'utf8')
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
+
+// TODO: 限流当前用进程内 Map，serverless 多实例无效。
+// 后续接入 Vercel KV / Upstash Redis 做持久化。
 const loginAttempts = new Map<string, { count: number; lastReset: number }>()
 const MAX_ATTEMPTS = 5
 const WINDOW_MS = 15 * 60 * 1000 // 15 分钟窗口
@@ -74,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    if (token !== ADMIN_TOKEN) {
+    if (!safeEqual(token, ADMIN_TOKEN)) {
       recordFailure(ip)
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }

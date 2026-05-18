@@ -1,34 +1,23 @@
-import { execSync } from 'child_process'
+import { promises as fs } from 'fs'
 import path from 'path'
 
-const CACHE_TTL = 3600 // 1 小时缓存
-let cachedData: any = null
-let cachedAt = 0
+const DATA_FILE = path.join(process.cwd(), 'public', 'data', 'macro.json')
+
+export const revalidate = 3600
 
 export async function GET() {
-  // 检查缓存
-  const now = Date.now()
-  if (cachedData && now - cachedAt < CACHE_TTL * 1000) {
-    return Response.json(cachedData)
-  }
-
   try {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'fetch-macro-data.py')
-    const output = execSync(`python3 ${scriptPath}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
+    const content = await fs.readFile(DATA_FILE, 'utf-8')
+    return new Response(content, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
     })
-    const data = JSON.parse(output)
-
-    if (data.error) {
-      return Response.json({ error: data.error }, { status: 500 })
-    }
-
-    cachedData = data
-    cachedAt = now
-    return Response.json(data)
-  } catch (error: any) {
-    console.error('Failed to fetch macro data:', error.message)
-    return Response.json({ error: '数据获取失败' }, { status: 500 })
+  } catch {
+    return Response.json(
+      { error: '宏观数据尚未生成，请运行 npm run fetch:macro' },
+      { status: 503 }
+    )
   }
 }

@@ -17,6 +17,8 @@ const nextConfig = {
       },
     ],
     dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // 明确指定工作区根目录，消除多 lockfile 警告
   outputFileTracingRoot: process.env.VERCEL ? undefined : process.cwd(),

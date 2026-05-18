@@ -170,12 +170,7 @@ export const getAllPosts = unstable_cache(
 // 获取已发布的文章
 export async function getPublishedPosts(): Promise<Post[]> {
   const posts = await getAllPosts()
-  const published = posts.filter(post => post.published)
-  // 模拟阅读量（实际项目中应从数据库或缓存读取）
-  return published.map((post, i) => ({
-    ...post,
-    views: Math.floor(Math.random() * 500) + 50 + i * 37,
-  }))
+  return posts.filter(post => post.published)
 }
 
 // 根据 slug 获取文章（带缓存）
