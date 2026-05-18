@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm ci --prefer-offline --no-audit --no-fund && next build",
+  "buildCommand": "next build",
   "installCommand": "npm ci --prefer-offline --no-audit --no-fund",
   "framework": "nextjs"
 }
