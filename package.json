@@ -11,7 +11,9 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "fetch:macro": "mkdir -p public/data && python3 scripts/fetch-macro-data.py > public/data/macro.json"
+    "fetch:macro": "mkdir -p public/data && python3 scripts/fetch-macro-data.py > public/data/macro.json",
+    "report:weekly": "python3 scripts/generate-weekly-report.py",
+    "report:publish": "python3 scripts/generate-weekly-report.py --publish"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

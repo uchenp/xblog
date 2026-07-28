@@ -1,0 +1,93 @@
+name: Generate Weekly Report
+
+on:
+  schedule:
+    # 每周日 UTC 14:00 (北京时间 22:00) 自动生成周报草稿
+    - cron: '0 14 * * 0'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: '是否直接发布（默认生成草稿）'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install akshare
+        run: pip install akshare --quiet
+
+      - name: Generate weekly report
+        id: report
+        run: |
+          PUBLISH_FLAG=""
+          if [ "${{ github.event.inputs.publish }}" = "true" ]; then
+            PUBLISH_FLAG="--publish"
+          fi
+          python3 scripts/generate-weekly-report.py $PUBLISH_FLAG > /dev/null
+          # 获取生成的文件名
+          WEEK_NUM=$(python3 -c "from datetime import datetime, timedelta; d=datetime.now()-timedelta(days=datetime.now().weekday()+7); print(f'{d.year}-w{d.isocalendar()[1]:02d}宏观数据')")
+          echo "filename=content/posts/${WEEK_NUM}.md" >> $GITHUB_OUTPUT
+          echo "week_title=${WEEK_NUM}" >> $GITHUB_OUTPUT
+
+      - name: Check if file is new
+        id: check
+        run: |
+          if git status --porcelain "${{ steps.report.outputs.filename }}" | grep -q '??'; then
+            echo "is_new=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_new=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create branch and PR
+        if: steps.check.outputs.is_new == 'true'
+        run: |
+          BRANCH="auto/weekly-report-$(date +%Y-w%V)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add "${{ steps.report.outputs.filename }}"
+          git commit -m "docs: 自动生成 ${{ steps.report.outputs.week_title }} 周报草稿"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "📊 ${{ steps.report.outputs.week_title }} 宏观数据周报" \
+            --body "## 自动生成的周报草稿
+
+本 PR 包含系统自动生成的宏观数据周报，数据已从 akshare 实时获取。
+
+**请补充以下内容后合并：**
+- [ ] 本周解读（关键发现、政策观察）
+- [ ] 市场影响分析
+- [ ] 下周关注事件
+
+合并后将自动部署到 [felixview.cc](https://felixview.cc)。
+
+---
+🤖 由 GitHub Actions 自动生成" \
+            --label "auto-generated"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Direct commit (if not new or publish mode)
+        if: steps.check.outputs.is_new != 'true' && github.event.inputs.publish == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.report.outputs.filename }}"
+          git commit -m "docs: 更新 ${{ steps.report.outputs.week_title }} 周报数据"
+          git push
