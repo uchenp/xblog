@@ -13,7 +13,9 @@
     "typecheck": "tsc --noEmit",
     "fetch:macro": "mkdir -p public/data && python3 scripts/fetch-macro-data.py > public/data/macro.json",
     "report:weekly": "python3 scripts/generate-weekly-report.py",
-    "report:publish": "python3 scripts/generate-weekly-report.py --publish"
+    "report:publish": "python3 scripts/generate-weekly-report.py --publish",
+    "post:new": "cp content/posts/_template.md content/posts/$(date +%Y-%m-%d)-draft.md && echo 'Created: content/posts/$(date +%Y-%m-%d)-draft.md'",
+    "post:ai": "python3 scripts/ai-assist.py"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
@@ -48,6 +50,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@vercel/analytics": "1.6.1",
     "@vercel/og": "^0.11.1",
+    "@vercel/speed-insights": "^1.3.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",

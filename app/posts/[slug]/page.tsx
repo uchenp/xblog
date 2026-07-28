@@ -13,6 +13,8 @@ import { ReadingProgress } from "@/components/reading-progress"
 import { Comments } from "@/components/comments"
 import { TableOfContents } from "@/components/table-of-contents"
 import { SeriesNavigation } from "@/components/series-navigation"
+import { ViewCounter } from "@/components/view-counter"
+import { NewsletterSubscribe } from "@/components/newsletter-subscribe"
 import { getPostBySlug, getPublishedPosts } from "@/lib/posts"
 
 interface PostPageProps {
@@ -130,6 +132,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     <Clock className="h-4 w-4" />
                     {readingTime} 分钟阅读
                   </span>
+                  <ViewCounter slug={slug} />
                   {post.categories?.length > 0 && (
                     <div className="flex items-center gap-2">
                       <span>📁</span>
@@ -171,6 +174,13 @@ export default async function PostPage({ params }: PostPageProps) {
               
               {/* 评论系统 */}
               <Comments />
+
+              {/* 订阅提示 */}
+              <div className="mt-12 rounded-lg border border-border bg-muted/30 p-5">
+                <h3 className="text-sm font-semibold mb-2">📬 订阅周报推送</h3>
+                <p className="text-xs text-muted-foreground mb-3">每周自动获取宏观经济数据更新，不错过任何重要变化。</p>
+                <NewsletterSubscribe />
+              </div>
             </article>
 
             {/* 右侧目录 */}

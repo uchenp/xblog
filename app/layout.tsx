@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt'
@@ -113,6 +114,7 @@ export default function RootLayout({
           {children}
           <Toaster position="top-center" />
           <Analytics />
+          <SpeedInsights />
           <PWAInstallPrompt />
           <ScrollToTop />
         </ThemeProvider>
