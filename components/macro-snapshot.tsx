@@ -37,9 +37,9 @@ export function MacroSnapshot() {
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // 从 API 获取核心指标
+  // 从静态数据文件获取指标（public/data/macro.json，由 npm run fetch:macro 生成）
   useEffect(() => {
-    fetch('/api/macro-data')
+    fetch('/data/macro.json')
       .then((res) => res.json())
       .then((data: ApiResponse) => {
         setApiData(data)

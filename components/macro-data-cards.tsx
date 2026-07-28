@@ -126,7 +126,7 @@ export function MacroDataCards() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/macro-data')
+    fetch('/data/macro.json')
       .then((res) => res.json())
       .then((data: ApiResponse) => {
         setApiData(data)
