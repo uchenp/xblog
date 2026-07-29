@@ -15,6 +15,7 @@ import { TableOfContents } from "@/components/table-of-contents"
 import { SeriesNavigation } from "@/components/series-navigation"
 import { ViewCounter } from "@/components/view-counter"
 import { NewsletterSubscribe } from "@/components/newsletter-subscribe"
+import { ShareButtons } from "@/components/share-buttons"
 import { getPostBySlug, getPublishedPosts } from "@/lib/posts"
 
 interface PostPageProps {
@@ -165,6 +166,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
               {/* 文章内容 */}
               <PostContent content={post.content} />
+
+              {/* 社交分享 */}
+              <ShareButtons title={post.title} slug={post.slug} excerpt={post.excerpt} />
               
               {/* 系列文章导航 */}
               <SeriesNavigation slug={post.slug} />
