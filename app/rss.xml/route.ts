@@ -1,7 +1,7 @@
 import { getPublishedPosts } from '@/lib/posts'
 
 export async function GET() {
-  const posts = getPublishedPosts()
+  const posts = await getPublishedPosts()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://felixview.cc'
 
   const items = posts
