@@ -4,32 +4,15 @@ import Giscus from '@giscus/react'
 import { useTheme } from 'next-themes'
 
 export function Comments() {
-  const { theme, resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme()
 
-  // 从环境变量读取配置（推荐）
-  const repo = process.env.NEXT_PUBLIC_GISCUS_REPO || 'your-github-username/your-repo-name'
-  const repoId = process.env.NEXT_PUBLIC_GISCUS_REPO_ID || 'your-repo-id'
-  const categoryId = process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || 'your-category-id'
+  const repo = process.env.NEXT_PUBLIC_GISCUS_REPO || ''
+  const repoId = process.env.NEXT_PUBLIC_GISCUS_REPO_ID || ''
+  const categoryId = process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID || ''
 
-  // 如果是开发环境且未配置，显示提示
-  if (process.env.NODE_ENV === 'development' && 
-      (repoId === 'your-repo-id' || categoryId === 'your-category-id')) {
-    return (
-      <div className="mt-16 rounded-lg border bg-muted/50 p-6 text-center">
-        <h3 className="font-semibold mb-2">💬 评论系统待配置</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          需要配置 Giscus 评论系统
-        </p>
-        <a
-          href="https://giscus.app/zh-CN"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-        >
-          前往配置 →
-        </a>
-      </div>
-    )
+  // 未配置时不渲染任何内容，避免报错
+  if (!repo || !repoId || !categoryId) {
+    return null
   }
 
   return (
