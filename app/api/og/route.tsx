@@ -5,9 +5,17 @@ export const runtime = 'edge'
 
 // 使用本地字体，避免外部网络请求
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-const fontData = fetch(new URL(`${siteUrl}/fonts/NotoSansSC-Regular.ttf`)).then((res) =>
-  res.arrayBuffer()
-)
+
+// 懒加载字体，避免构建时 fetch 失败
+let fontDataPromise: Promise<ArrayBuffer> | null = null
+function getFontData() {
+  if (!fontDataPromise) {
+    fontDataPromise = fetch(new URL(`${siteUrl}/fonts/NotoSansSC-Regular.ttf`))
+      .then((res) => res.arrayBuffer())
+      .catch(() => new ArrayBuffer(0))
+  }
+  return fontDataPromise
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -109,7 +117,7 @@ export async function GET(request: NextRequest) {
           fonts: [
             {
               name: 'Noto Sans CJK',
-              data: await fontData,
+              data: await getFontData(),
               weight: 400,
               style: 'normal',
             },
@@ -221,7 +229,7 @@ export async function GET(request: NextRequest) {
         fonts: [
           {
             name: 'Noto Sans CJK',
-            data: await fontData,
+            data: await getFontData(),
             weight: 400,
             style: 'normal',
           },

@@ -2,6 +2,8 @@ import { FileText, Eye, Tag, FolderOpen } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getAllPosts, getAllTags, getAllCategories } from "@/lib/posts"
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   const posts = await getAllPosts()
   const publishedPosts = posts.filter(p => p.published)

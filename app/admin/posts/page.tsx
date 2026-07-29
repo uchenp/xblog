@@ -4,6 +4,8 @@ import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+
+export const dynamic = 'force-dynamic'
 import {
   Table,
   TableBody,
