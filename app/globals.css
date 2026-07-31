@@ -75,6 +75,123 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ===== 彩色主题（data-theme 与明暗模式自由组合） ===== */
+
+/* 海洋蓝 */
+[data-theme='ocean'] {
+  --primary: oklch(0.623 0.214 259.815);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --ring: oklch(0.623 0.214 259.815);
+  --chart-1: oklch(0.623 0.214 259.815);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.696 0.17 162.48);
+  --chart-5: oklch(0.707 0.165 254.624);
+}
+
+.dark[data-theme='ocean'] {
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.488 0.243 264.376);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.707 0.165 254.624);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
+/* 极光紫 */
+[data-theme='violet'] {
+  --primary: oklch(0.606 0.25 292.717);
+  --primary-foreground: oklch(0.969 0.016 293.756);
+  --ring: oklch(0.606 0.25 292.717);
+  --chart-1: oklch(0.606 0.25 292.717);
+  --chart-2: oklch(0.627 0.265 303.9);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.586 0.253 17.585);
+  --chart-5: oklch(0.6 0.118 184.704);
+}
+
+.dark[data-theme='violet'] {
+  --primary: oklch(0.541 0.281 293.009);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.606 0.25 292.717);
+  --chart-1: oklch(0.627 0.265 303.9);
+  --chart-2: oklch(0.606 0.25 292.717);
+  --chart-3: oklch(0.707 0.165 254.624);
+  --chart-4: oklch(0.712 0.194 13.428);
+  --chart-5: oklch(0.696 0.17 162.48);
+}
+
+/* 翡翠绿 */
+[data-theme='emerald'] {
+  --primary: oklch(0.627 0.194 149.214);
+  --primary-foreground: oklch(0.979 0.021 166.113);
+  --ring: oklch(0.627 0.194 149.214);
+  --chart-1: oklch(0.627 0.194 149.214);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.511 0.096 186.391);
+  --chart-4: oklch(0.696 0.17 162.48);
+  --chart-5: oklch(0.646 0.222 41.116);
+}
+
+.dark[data-theme='emerald'] {
+  --primary: oklch(0.696 0.17 162.48);
+  --primary-foreground: oklch(0.393 0.095 152.535);
+  --ring: oklch(0.596 0.145 163.225);
+  --chart-1: oklch(0.696 0.17 162.48);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
+/* 经典橘红 */
+[data-theme='ember'] {
+  --primary: oklch(0.637 0.237 25.331);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.637 0.237 25.331);
+  --chart-1: oklch(0.637 0.237 25.331);
+  --chart-2: oklch(0.705 0.213 47.604);
+  --chart-3: oklch(0.586 0.253 17.585);
+  --chart-4: oklch(0.646 0.222 41.116);
+  --chart-5: oklch(0.546 0.245 262.881);
+}
+
+.dark[data-theme='ember'] {
+  --primary: oklch(0.637 0.237 25.331);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.637 0.237 25.331);
+  --chart-1: oklch(0.637 0.237 25.331);
+  --chart-2: oklch(0.705 0.213 47.604);
+  --chart-3: oklch(0.712 0.194 13.428);
+  --chart-4: oklch(0.769 0.188 70.08);
+  --chart-5: oklch(0.488 0.243 264.376);
+}
+
+/* 蔷薇粉 */
+[data-theme='rose'] {
+  --primary: oklch(0.586 0.253 17.585);
+  --primary-foreground: oklch(0.969 0.015 12.422);
+  --ring: oklch(0.586 0.253 17.585);
+  --chart-1: oklch(0.586 0.253 17.585);
+  --chart-2: oklch(0.645 0.246 16.439);
+  --chart-3: oklch(0.606 0.25 292.717);
+  --chart-4: oklch(0.646 0.222 41.116);
+  --chart-5: oklch(0.546 0.245 262.881);
+}
+
+.dark[data-theme='rose'] {
+  --primary: oklch(0.712 0.194 13.428);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.712 0.194 13.428);
+  --chart-1: oklch(0.712 0.194 13.428);
+  --chart-2: oklch(0.645 0.246 16.439);
+  --chart-3: oklch(0.627 0.265 303.9);
+  --chart-4: oklch(0.705 0.213 47.604);
+  --chart-5: oklch(0.488 0.243 264.376);
+}
+
 @theme inline {
   --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
@@ -122,6 +239,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   /* 美化引用块 */

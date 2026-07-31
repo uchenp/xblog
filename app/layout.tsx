@@ -3,6 +3,8 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ColorThemeProvider } from '@/components/color-theme-provider'
+import { STORAGE_KEY } from '@/lib/color-themes'
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import './globals.css'
@@ -109,14 +111,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('${STORAGE_KEY}');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased min-h-screen bg-background">
         <ThemeProvider>
-          {children}
-          <Toaster position="top-center" />
-          <Analytics />
-          <SpeedInsights />
-          <PWAInstallPrompt />
-          <ScrollToTop />
+          <ColorThemeProvider>
+            {children}
+            <Toaster position="top-center" />
+            <Analytics />
+            <SpeedInsights />
+            <PWAInstallPrompt />
+            <ScrollToTop />
+          </ColorThemeProvider>
         </ThemeProvider>
       </body>
     </html>
