@@ -41,14 +41,14 @@
   "pmi": {
     "name": "制造业 PMI",
     "nameEn": "Manufacturing PMI",
-    "latestValue": 50.3,
-    "previousValue": 50.0,
+    "latestValue": 49.2,
+    "previousValue": 50.3,
     "unit": "",
-    "period": "2026年06月份",
+    "period": "2026年07月份",
     "publishDate": "2026-03-31",
-    "yoy": 1.2,
-    "mom": 0.3,
-    "trend": "up",
+    "yoy": -0.2,
+    "mom": -1.1,
+    "trend": "down",
     "category": "growth"
   },
   "exports": {
