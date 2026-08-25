@@ -11,10 +11,13 @@ import { HeroBackground } from "@/components/hero-background"
 import { WorldHeatmap } from "@/components/world-heatmap"
 import { MacroSnapshot } from "@/components/macro-snapshot"
 import { getPublishedPosts } from "@/lib/posts"
+import { getMacroJson } from "@/lib/macro-data-server"
 
 export default async function HomePage() {
   const posts = await getPublishedPosts()
   const recentPosts = posts.slice(0, 5)
+  // 服务端读取一次宏观数据，下发给两个组件，避免客户端重复 fetch
+  const macroData = await getMacroJson()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -55,7 +58,7 @@ export default async function HomePage() {
             </div>
             
             {/* 核心指标快照 */}
-            <MacroSnapshot />
+            <MacroSnapshot initialData={macroData} />
           </div>
         </section>
 
@@ -98,7 +101,7 @@ export default async function HomePage() {
         {/* 宏观数据板块 */}
         <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6 sm:pb-14">
           <div className="flex flex-col gap-6">
-            <MacroDataCards />
+            <MacroDataCards initialData={macroData} />
             <EconomicCalendarWidget />
             <WorldHeatmap />
           </div>

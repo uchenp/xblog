@@ -27,6 +27,7 @@ interface ShootingStar {
 }
 
 // 暗色模式：闪烁星星 + 流星 / 亮色模式：渐变光晕
+// 性能优化：滚出视口、页面切到后台、或用户偏好减少动态效果时暂停动画
 export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const starsRef = useRef<Star[]>([])
@@ -34,6 +35,10 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
   const mouseRef = useRef({ x: -9999, y: -9999 })
   const animationFrameRef = useRef<number>(0)
   const lastShootingStarTime = useRef(0)
+  const runningRef = useRef(false)
+  const inViewRef = useRef(true)
+  const pageVisibleRef = useRef(true)
+  const reducedMotionRef = useRef(false)
 
   const STAR_COUNT = 150
   const SHOOTING_STAR_INTERVAL = 4000 // 每 4 秒尝试生成流星
@@ -122,8 +127,22 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       drawGradient(ctx, width, height, mouse, time)
     }
 
-    animationFrameRef.current = requestAnimationFrame(draw)
+    if (runningRef.current) {
+      animationFrameRef.current = requestAnimationFrame(draw)
+    }
   }, [])
+
+  // 根据「是否在视口内 / 页面是否可见 / 是否偏好减少动态」决定启停
+  const updatePlayState = useCallback(() => {
+    const shouldRun = inViewRef.current && pageVisibleRef.current && !reducedMotionRef.current
+    if (shouldRun && !runningRef.current) {
+      runningRef.current = true
+      animationFrameRef.current = requestAnimationFrame(draw)
+    } else if (!shouldRun && runningRef.current) {
+      runningRef.current = false
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+  }, [draw])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -135,6 +154,8 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       canvas.width = parent.clientWidth
       canvas.height = parent.clientHeight
       initStars(canvas.width, canvas.height)
+      // 尺寸变化或暂停状态下也保证画面不空白
+      if (!runningRef.current) draw()
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -149,21 +170,54 @@ export function ParticleNetwork({ className = '' }: ParticleNetworkProps) {
       mouseRef.current = { x: -9999, y: -9999 }
     }
 
+    const handleVisibilityChange = () => {
+      pageVisibleRef.current = !document.hidden
+      updatePlayState()
+    }
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    reducedMotionRef.current = motionQuery.matches
+    const handleMotionPreferenceChange = () => {
+      reducedMotionRef.current = motionQuery.matches
+      updatePlayState()
+      if (reducedMotionRef.current) draw() // 停止动画后保留一帧静态背景
+    }
+
     handleResize()
     window.addEventListener('resize', handleResize)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mouseleave', handleMouseLeave)
+    motionQuery.addEventListener('change', handleMotionPreferenceChange)
 
     initStars(canvas.width, canvas.height)
-    draw()
+    draw() // 首帧立即绘制（reduced-motion 下即为静态背景）
+    updatePlayState()
+
+    // 滚出视口时暂停动画（提前 200px 预启动，避免滚动回来时闪空白）
+    let observer: IntersectionObserver | null = null
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          inViewRef.current = entries[0]?.isIntersecting ?? true
+          updatePlayState()
+        },
+        { rootMargin: '200px 0px' }
+      )
+      observer.observe(canvas)
+    }
 
     return () => {
+      runningRef.current = false
+      cancelAnimationFrame(animationFrameRef.current)
       window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       canvas.removeEventListener('mousemove', handleMouseMove)
       canvas.removeEventListener('mouseleave', handleMouseLeave)
-      cancelAnimationFrame(animationFrameRef.current)
+      motionQuery.removeEventListener('change', handleMotionPreferenceChange)
+      observer?.disconnect()
     }
-  }, [draw, initStars])
+  }, [draw, initStars, updatePlayState])
 
   return (
     <canvas

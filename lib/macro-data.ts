@@ -185,3 +185,26 @@ export function getCategoryColor(category: MacroIndicator['category']): string {
   }
   return colors[category]
 }
+
+// public/data/macro.json 的动态数据结构（由 npm run fetch:macro 生成）
+export interface MacroApiIndicator {
+  latestValue: number
+  previousValue: number
+  period: string
+  publishDate: string
+  yoy: number
+  trend: 'up' | 'down' | 'stable'
+}
+
+export interface MacroJsonData {
+  gdp?: MacroApiIndicator
+  pmi?: MacroApiIndicator
+  cpi?: MacroApiIndicator
+  m2?: MacroApiIndicator
+  ppi?: MacroApiIndicator
+  exports?: MacroApiIndicator
+  imports?: MacroApiIndicator
+  social_financing?: MacroApiIndicator
+  fixed_asset?: MacroApiIndicator
+  lpr?: MacroApiIndicator
+}

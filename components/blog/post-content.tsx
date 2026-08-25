@@ -1,5 +1,5 @@
-"use client"
-
+// 服务端组件：Markdown 在服务端渲染为 HTML，避免把 react-markdown/remark/rehype
+// 打进客户端 bundle；交互子组件（CodeBlock/OptimizedImage）仍是客户端组件。
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
@@ -48,14 +48,14 @@ export function PostContent({ content }: PostContentProps) {
               </code>
             )
           },
-          blockquote: function Blockquote({ children, ...props }: any) {
+          blockquote: function Blockquote({ node, inline, children, ...props }: any) {
             return (
               <blockquote className="border-l-4 border-primary bg-muted/10 italic rounded-r-lg px-6 py-4 my-6" {...props}>
                 {children}
               </blockquote>
             )
           },
-          table: function Table({ children, ...props }: any) {
+          table: function Table({ node, inline, children, ...props }: any) {
             return (
               <div className="my-6 overflow-x-auto">
                 <table className="w-full border-collapse border rounded-lg overflow-hidden" {...props}>
@@ -64,25 +64,25 @@ export function PostContent({ content }: PostContentProps) {
               </div>
             )
           },
-          th: function TH({ children, ...props }: any) {
+          th: function TH({ node, inline, children, ...props }: any) {
             return (
               <th className="border bg-muted px-4 py-2 text-left font-semibold" {...props}>
                 {children}
               </th>
             )
           },
-          td: function TD({ children, ...props }: any) {
+          td: function TD({ node, inline, children, ...props }: any) {
             return (
               <td className="border px-4 py-2" {...props}>
                 {children}
               </td>
             )
           },
-          img: function OptimizedImg({ src, alt, ...props }: any) {
+          img: function OptimizedImg({ node, inline, src, alt }: any) {
             if (!src) return null
             return <OptimizedImage src={src} alt={alt || ""} />
           },
-          a: function Link({ href, children, ...props }: any) {
+          a: function Link({ node, inline, href, children, ...props }: any) {
             return (
               <a
                 href={href}
@@ -95,10 +95,10 @@ export function PostContent({ content }: PostContentProps) {
               </a>
             )
           },
-          hr: function HR({ ...props }: any) {
+          hr: function HR({ node, inline, ...props }: any) {
             return <hr className="border-border my-8" {...props} />
           },
-          h1: function H1({ children, ...props }: any) {
+          h1: function H1({ node, inline, children, ...props }: any) {
             const slug = generateSlug(String(children))
             return (
               <h1 id={slug} className="scroll-mt-20" {...props}>
@@ -106,7 +106,7 @@ export function PostContent({ content }: PostContentProps) {
               </h1>
             )
           },
-          h2: function H2({ children, ...props }: any) {
+          h2: function H2({ node, inline, children, ...props }: any) {
             const slug = generateSlug(String(children))
             return (
               <h2 id={slug} className="scroll-mt-20" {...props}>
@@ -114,7 +114,7 @@ export function PostContent({ content }: PostContentProps) {
               </h2>
             )
           },
-          h3: function H3({ children, ...props }: any) {
+          h3: function H3({ node, inline, children, ...props }: any) {
             const slug = generateSlug(String(children))
             return (
               <h3 id={slug} className="scroll-mt-20" {...props}>

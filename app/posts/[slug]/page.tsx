@@ -83,6 +83,8 @@ export default async function PostPage({ params }: PostPageProps) {
   const postUrl = `${siteUrl}/posts/${slug}`
 
   // 结构化数据（Schema.org）
+  // 注意：不嵌入 articleBody（会把全文重复塞进 HTML，显著增大页面体积，
+  // Google 也明确表示不需要该字段）
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -98,7 +100,6 @@ export default async function PostPage({ params }: PostPageProps) {
     wordCount: post.content.length,
     timeRequired: `PT${readingTime}M`,
     inLanguage: 'zh-CN',
-    articleBody: post.content,
   }
 
   return (
@@ -106,7 +107,8 @@ export default async function PostPage({ params }: PostPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          // 转义 "<" 防止正文中的 </script> 破坏脚本标签（XSS 隐患）
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
         }}
       />
       <ReadingProgress />

@@ -1,31 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ArrowUpRight, ArrowDownRight, Minus, BarChart3 } from 'lucide-react'
 import { CollapsibleSection } from '@/components/collapsible-section'
-import { macroIndicators, getCategoryLabel, getCategoryColor, type MacroIndicator } from '@/lib/macro-data'
+import { macroIndicators, getCategoryLabel, getCategoryColor, type MacroIndicator, type MacroJsonData } from '@/lib/macro-data'
 
-interface ApiIndicator {
-  latestValue: number
-  previousValue: number
-  period: string
-  publishDate: string
-  yoy: number
-  trend: 'up' | 'down' | 'stable'
-}
-
-interface ApiResponse {
-  gdp?: ApiIndicator
-  pmi?: ApiIndicator
-  cpi?: ApiIndicator
-  m2?: ApiIndicator
-  ppi?: ApiIndicator
-  exports?: ApiIndicator
-  imports?: ApiIndicator
-  social_financing?: ApiIndicator
-  fixed_asset?: ApiIndicator
-  lpr?: ApiIndicator
-}
+type ApiResponse = MacroJsonData
 
 const indicatorConfig: Array<{
   key: keyof ApiResponse
@@ -120,22 +100,9 @@ function IndicatorCard({ indicator }: { indicator: MacroIndicator }) {
   )
 }
 
-export function MacroDataCards() {
+export function MacroDataCards({ initialData = null }: { initialData?: MacroJsonData | null }) {
   const [activeCategory, setActiveCategory] = useState<string>('all')
-  const [apiData, setApiData] = useState<ApiResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/data/macro.json')
-      .then((res) => res.json())
-      .then((data: ApiResponse) => {
-        setApiData(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        setLoading(false)
-      })
-  }, [])
+  const apiData = initialData
 
   // 合并 API 数据和静态数据
   const mergedIndicators: MacroIndicator[] = indicatorConfig.map((config) => {
@@ -167,22 +134,6 @@ export function MacroDataCards() {
     : mergedIndicators.filter((i) => i.category === activeCategory)
 
   const summary = `${mergedIndicators.length} 项指标 · ${mergedIndicators[0]?.period}`
-
-  if (loading) {
-    return (
-      <CollapsibleSection title="经济指标" summary="加载中...">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="rounded-xl border border-border bg-card p-4 animate-pulse">
-              <div className="h-4 bg-muted rounded w-24 mb-3" />
-              <div className="h-8 bg-muted rounded w-32 mb-2" />
-              <div className="h-3 bg-muted rounded w-20" />
-            </div>
-          ))}
-        </div>
-      </CollapsibleSection>
-    )
-  }
 
   return (
     <CollapsibleSection title="经济指标" summary={summary}>

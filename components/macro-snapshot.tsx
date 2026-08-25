@@ -1,54 +1,20 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { macroIndicators, getCategoryColor } from '@/lib/macro-data'
+import { macroIndicators, getCategoryColor, type MacroJsonData } from '@/lib/macro-data'
 
-interface ApiIndicator {
-  latestValue: number
-  previousValue: number
-  period: string
-  publishDate: string
-  yoy: number
-  trend: 'up' | 'down' | 'stable'
-}
-
-interface ApiResponse {
-  gdp?: ApiIndicator
-  pmi?: ApiIndicator
-  cpi?: ApiIndicator
-  m2?: ApiIndicator
-  ppi?: ApiIndicator
-  exports?: ApiIndicator
-  imports?: ApiIndicator
-  social_financing?: ApiIndicator
-  fixed_asset?: ApiIndicator
-  lpr?: ApiIndicator
-}
+type ApiResponse = MacroJsonData
 
 const AUTO_PLAY_INTERVAL = 5000
 
-export function MacroSnapshot() {
-  const [apiData, setApiData] = useState<ApiResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+export function MacroSnapshot({ initialData = null }: { initialData?: MacroJsonData | null }) {
+  const apiData = initialData
   const [currentPage, setCurrentPage] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  // 从静态数据文件获取指标（public/data/macro.json，由 npm run fetch:macro 生成）
-  useEffect(() => {
-    fetch('/data/macro.json')
-      .then((res) => res.json())
-      .then((data: ApiResponse) => {
-        setApiData(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        setLoading(false)
-      })
-  }, [])
 
   // 合并 API 数据和静态数据，每页 4 个指标
   const buildPages = useCallback(() => {
@@ -173,23 +139,6 @@ export function MacroSnapshot() {
     if (!exitDir) return {}
     if (exitDir === 'left') return { opacity: 0, transform: 'translateX(20px)' }
     return { opacity: 0, transform: 'translateX(-20px)' }
-  }
-
-  if (loading) {
-    return (
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="rounded-lg border border-border/50 bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-pulse"
-          >
-            <div className="h-3 bg-muted rounded w-16 mb-2" />
-            <div className="h-7 bg-muted rounded w-20 mb-2" />
-            <div className="h-3 bg-muted rounded w-12" />
-          </div>
-        ))}
-      </div>
-    )
   }
 
   return (
